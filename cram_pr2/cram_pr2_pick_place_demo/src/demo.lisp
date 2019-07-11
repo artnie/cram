@@ -40,6 +40,52 @@
 (defmethod exe:generic-perform :before (designator)
   (roslisp:ros-info (demo perform) "~%~A~%~%" designator))
 
+(defun tray-spawn ()
+  (initialize)
+  (btr-utils:spawn-object :tray-base :tray-base :pose '((1.4 0.6 0.85) (0 0 0 1)))
+  (btr-utils:spawn-object :tray-1 :tray :pose '((1.4 0.6 0.9) (0.0 0.0 0.7071067811865475 0.7071067811865476)))
+  (btr:simulate btr:*current-bullet-world* 10))
+
+(defun tray-demo ()
+  (let* ((?fetching-location
+           (desig:a location
+                    (on (desig:an object
+                                  (type counter-top)
+                                  (urdf-name sink-area-surface)
+                                  (owl-name "kitchen_sink_block_counter_top")
+                                  (part-of kitchen)))
+                    (side left)
+                    (side front)
+                    (range 0.5)))
+         (?pose
+           (cl-transforms-stamped:make-pose-stamped
+            "map"
+            0.0
+            (cl-transforms:make-3d-vector -0.78 1.0 0.95)
+            (cl-transforms:make-quaternion 0 0 -0.7071067811865476 0.7071067811865476)))
+         (?delivering-location
+           (desig:a location
+                    (pose ?pose)))
+         (?object-to-fetch
+           (desig:an object
+                     (type :tray)
+                     (location ?fetching-location))))
+    (tray-spawn)
+    (urdf-proj:with-simulated-robot
+      (exe:perform
+       (desig:an action
+                 (type searching)
+                 (object (desig:an object (type tray)))
+                 (location ?fetching-location)))
+      (exe:perform
+       (desig:an action
+                 (type transporting)
+                 (object ?object-to-fetch)
+                 ;; (arm (left right))
+                 (location ?fetching-location)
+                 (target ?delivering-location)))
+      )))
+  
 (cpl:def-cram-function park-robot ()
   (cpl:with-failure-handling
       ((cpl:plan-failure (e)
