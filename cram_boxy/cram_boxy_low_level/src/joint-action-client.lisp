@@ -57,7 +57,9 @@
                                      (mapcar #'second joint-states))))
                 joint-states-list)
    :max_vel *joint-max-velocity*
-   :joint_imp (apply #'vector *joint-impedance-list*)))
+   :joint_imp (apply #'vector *joint-impedance-list*)
+   :ee_mass *ee-mass*
+   :ee_cog (apply #'vector *ee-center-of-gravity*)))
 
 (defun move-arm-joints (&key
                           goal-joint-states-left

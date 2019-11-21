@@ -29,41 +29,15 @@
 
 (in-package :boxy-ll)
 
-(actionlib-client:make-simple-action-client
- 'dlr-cart-action
- "left_arm_cart"
- "iai_dlr_msgs/CartesianAction"
- *cart-action-timeout*)
+(defparameter *ee-mass* 2.2)
+(defparameter *ee-center-of-gravity* '(0.0 0.0 0.19))
 
-(defun make-cart-action-goal (pose-stamped)
-  (declare (type cl-transforms-stamped:pose-stamped pose-stamped))
-  (roslisp:make-message
-   'iai_dlr_msgs-msg:CartesianGoal
-   :goal_pose (cl-transforms-stamped:to-msg pose-stamped)
-   :max_trans_vel *cart-max-translational-vel*
-   :ee_mass *ee-mass*
-   :ee_cog (apply #'vector *ee-center-of-gravity*)
-   :cart_imp (apply #'vector *cart-impedance-list*)))
+(defparameter *cart-action-timeout* 10.0
+  "How many seconds to wait before returning from cart action.")
+(defparameter *cart-max-translational-vel* 0.2)
+(defparameter *cart-impedance-list* '(400 400 400 400 400 400))
 
-(defun move-arm-cartesian (&key
-                             goal-pose-stamped-left
-                             goal-pose-stamped-right
-                             (action-timeout *cart-action-timeout*))
-  (declare (ignore goal-pose-stamped-right))
-  (multiple-value-bind (result status)
-      (actionlib-client:call-simple-action-client
-       'dlr-cart-action
-       :action-goal (make-cart-action-goal goal-pose-stamped-left)
-       :action-timeout action-timeout)
-    (roslisp:ros-info (cart-action) "left arm action finished.")
-    (values result status)))
-
-(defun move-arm-cartesian-example ()
-  (move-arm-cartesian
-   :goal-pose-stamped-left
-   (cl-transforms-stamped:pose->pose-stamped
-    "left_arm_0_link"
-    0.0
-    (cram-tf:list->pose
-     '((-0.34 -0.03 0.7)
-       (0.03797708824277d0 -0.31851065158844d0 -0.04735903814435d0 0.9459651708603d0))))))
+(defparameter *joint-action-timeout* 5.0
+  "How many seconds to wait before returning from joint action.")
+(defparameter *joint-max-velocity* (cram-math:degrees->radians 30))
+(defparameter *joint-impedance-list* '(500 500 500 500 500 1500 1500))

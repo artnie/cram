@@ -62,8 +62,9 @@
   ((:module "src"
     :components
     ((:file "package")
+     (:file "parameters" :depends-on ("package"))
      (:file "neck" :depends-on ("package"))
      (:file "grippers" :depends-on ("package"))
      (:file "force-torque-sensor" :depends-on ("package"))
-     (:file "joint-action-client" :depends-on ("package"))
-     (:file "cart-action-client" :depends-on ("package"))))))
+     (:file "joint-action-client" :depends-on ("package" "parameters"))
+     (:file "cart-action-client" :depends-on ("package" "parameters"))))))
