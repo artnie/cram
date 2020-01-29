@@ -252,12 +252,13 @@ retries with different search location or robot base location."
                               :warning-namespace (fd-plans search-for-object)
                               :reset-designators (list ?robot-location)))))
 
-                (exe:perform (desig:an action
-                                       (type turning-towards)
-                                       (target ?search-location)))
-                (exe:perform (desig:an action
-                                       (type detecting)
-                                       (object ?object-designator))))))))))))
+                    (exe:perform (desig:an action
+                                           (type turning-towards)
+                                           (target ?search-location)))
+                    (exe:perform (desig:an action
+                                           (type perceiving)
+                                           (object ?object-designator)
+                                           (counter 1)))))))))))))
 
 
 
@@ -279,7 +280,7 @@ retries with different search location or robot base location."
 one of arms in the `?arms' lazy list (if not NIL) and one of grasps in `?grasps' if not NIL,
 while standing at `?pick-up-robot-location'
 and using the grasp and arm specified in `pick-up-action' (if not NIL)."
-  (let ((counter 10))
+  (let ((?counter 10))
     
   (cpl:with-failure-handling
       ((desig:designator-error (e)
@@ -308,7 +309,7 @@ and using the grasp and arm specified in `pick-up-action' (if not NIL)."
                 common-fail:perception-low-level-failure
                 common-fail:object-unreachable
                 common-fail:manipulation-low-level-failure) (e)
-             (decf counter)
+             (decf ?counter)
              (common-fail:retry-with-loc-designator-solutions
                  ?pick-up-robot-location
                  relocation-for-ik-retries
@@ -348,14 +349,10 @@ and using the grasp and arm specified in `pick-up-action' (if not NIL)."
             ;; (btr:occluding-objects btr:*current-bullet-world* 
             
             (let ((?more-precise-perceived-object-desig
-                    (if (<= count 3)
-                        (exe:perform (desig:a motion
-                                              (type world-state-detecting)
-                                              (object ?object-designator)))
-                        (exe:perform (desig:an action
-                                               (type detecting)
-                                               (object ?object-designator))))))
-                
+                    (exe:perform (desig:an action
+                                           (type perceiving)
+                                           (object ?object-designator)
+                                           (counter ?counter)))))
 
               (let ((?arm (cut:lazy-car ?arms)))
                 ;; if picking up fails, try another arm
