@@ -168,24 +168,27 @@
                            (destructuring-bind (object-name object-type object-color
                                                 object-pose-list)
                                object-name-type-pose-list
-                             (let ((object-relative-pose
-                                     (cram-tf:list->pose object-pose-list)))
-                               (btr-utils:spawn-object
-                                object-name
-                                object-type
-                                :mass 0.0
-                                :color object-color
-                                :pose (cram-tf:pose->list
-                                       (cl-tf:make-pose
-                                        (cl-transforms:v+
-                                         (cl-transforms:make-3d-vector
-                                          (- *plate-x* *plate-rad-x*)
-                                          (- *plate-y* *plate-rad-y*)
-                                          (+ *plate-z* *plate-rad-z*))
-                                         (cl-transforms:origin
-                                          object-relative-pose))
-                                        (cl-transforms:orientation
-                                         object-relative-pose)))))))
+                             (roslisp:ros-info (assembly-setup) "Spawning ~a" object-name)
+                             (let* ((object-relative-pose
+                                     (cram-tf:list->pose object-pose-list))
+                                    (spawned-obj (btr-utils:spawn-object
+                                                  object-name
+                                                  object-type
+                                                  :mass 0.0
+                                                  :color object-color
+                                                  :pose (cram-tf:pose->list
+                                                         (cl-tf:make-pose
+                                                          (cl-transforms:v+
+                                                           (cl-transforms:make-3d-vector
+                                                            (- *plate-x* *plate-rad-x*)
+                                                            (- *plate-y* *plate-rad-y*)
+                                                            (+ *plate-z* *plate-rad-z*))
+                                                           (cl-transforms:origin
+                                                            object-relative-pose))
+                                                          (cl-transforms:orientation
+                                                           object-relative-pose))))))
+                               (visualize-part object-name)
+                               spawned-obj)))
                          spawning-poses)))
     objects))
 

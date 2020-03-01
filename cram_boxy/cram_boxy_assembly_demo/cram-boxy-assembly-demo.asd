@@ -51,7 +51,7 @@
                cram-mobile-pick-place-plans
                cram-robot-interfaces ; for *robot-urdf*
                cram-object-knowledge
-               ;; cram-robosherlock
+               cram-robosherlock
 
                cram-physics-utils ; for reading "package://" paths
                cl-bullet ; for handling BOUNDING-BOX datastructures
@@ -67,11 +67,14 @@
 
                cram-urdf-projection      ; for with-simulated-robot
                cram-boxy-description
-               ;; cram-boxy-low-level
+              
                cram-process-modules
-               ;; cram-boxy-process-modules
+               
                cram-boxy-plans   ; for (a location (on ?obj) (attachment ?att) ...)
 
+               cram-boxy-description
+               cram-giskard
+               ;; cram-boxy-process-modules
                ;; real robot
                )
 
@@ -81,4 +84,5 @@
     ((:file "package")
      (:file "setup" :depends-on ("package"))
      (:file "projection-demo" :depends-on ("package"))
-     (:file "demo" :depends-on ("package" "projection-demo"))))))
+     (:file "demo" :depends-on ("package" "projection-demo"))
+     (:file "utils" :depends-on ("package" "demo"))))))

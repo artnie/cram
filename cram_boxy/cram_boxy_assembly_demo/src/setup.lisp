@@ -71,7 +71,7 @@
      (cut:force-ll
       (prolog `(and
                 (btr:bullet-world ?w)
-                (btr:debug-window ?w)
+                ;; (btr:debug-window ?w)
                 (btr:assert ?w (btr:object :static-plane :floor ((0 0 0) (0 0 0 1))
                                                          :normal (0 0 1) :constant 0))
                 (btr:assert ?w (btr:object :urdf :kitchen ((0 0 0) (0 0 0 1))
@@ -115,3 +115,11 @@
   (btr:add-objects-to-mesh-list "assembly_models" :directory "battat/convention" :extension "stl"))
 
 (roslisp-utilities:register-ros-init-function init-projection)
+
+
+(defmacro with-giskard-controlled-robot (&body body)
+  `(cram-process-modules:with-process-modules-running
+       (rs:robosherlock-perception-pm
+         giskard:giskard-pm)
+     (cpl-impl::named-top-level (:name :top-level)
+       ,@body)))
