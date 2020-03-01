@@ -82,7 +82,7 @@ or in general at compile-time.")
     (setf *fixed-frame* "map")
     (roslisp:ros-info (cram-tf init-tf) "Set *fixed-frame* to ~s." *fixed-frame*)
 
-    (setf *transformer* (make-instance 'cl-tf:transform-listener))
+    (setf *transformer* (make-instance 'cl-tf2:buffer-client))
     (roslisp:ros-info (cram-tf init-tf)
                       "Initialized *transformer* to a ~a." (type-of *transformer*))
 

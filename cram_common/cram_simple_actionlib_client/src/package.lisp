@@ -35,4 +35,5 @@
   (:export
    ;; simple-actionlib-client
    #:make-simple-action-client
-   #:call-simple-action-client))
+   #:call-simple-action-client
+   #:destroy-simple-action-clients))
