@@ -41,6 +41,7 @@
                :cram-prolog
                :cram-robot-interfaces
                :cl-tf
+               :cl-tf2
                :tf2_msgs-msg ; for TF broadcaster
                :roslisp-utilities
                :roslisp
