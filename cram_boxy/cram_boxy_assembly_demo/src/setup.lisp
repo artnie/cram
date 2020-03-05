@@ -29,7 +29,7 @@
 
 (in-package :demo)
 
-;; roslaunch cram_boxy_assembly_demo sandbox.launch
+;; roslaunch cram_boxy_assembly_demo giskard_control_simulated.launch
 
 (defvar *kitchen-urdf* nil)
 (defparameter *robot-parameter* "robot_description")
@@ -101,10 +101,8 @@
     (<- (costmap:orientation-samples 2))
     (<- (costmap:orientation-sample-step 0.1)))
 
-  ;; (setf cram-tf:*transformer* (make-instance 'cl-tf2:buffer-client))
-
   (setup-bullet-world)
-
+  
   (setf cram-tf:*tf-default-timeout* 2.0)
 
   (setf prolog:*break-on-lisp-errors* t)
@@ -117,9 +115,38 @@
 (roslisp-utilities:register-ros-init-function init-projection)
 
 
+;;;;;;;;;;;;;;;;;;;;;;;
+;; PM and macro stuff
+
+;; Make world-state-detection available outside of urdf-proj
+(def-fact-group world-state-matching-pms (cpm:available-process-module)
+  (<- (cpm:available-process-module btr-belief:world-state-detecting-pm) (true)))
+
+;; Mock robosherlock detecting desig
+(defun detect (?input-designator)
+  (declare (type desig:object-designator ?input-designator))
+  (roslisp:ros-info (assembly setup) "Mocking detection motion to world-state-detection.")
+  (exe:perform (desig:a motion
+                        (type world-state-detecting)
+                        (object ?input-designator))))
+(cpm:def-process-module assembly-perception-pm (motion-designator)
+  (destructuring-bind (command argument-1) (desig:reference motion-designator)
+    (ecase command
+      (cram-common-designators:detect
+       (handler-case
+           (detect argument-1))))))
+(def-fact-group assembly-matching-pms (cpm:matching-process-module
+                                       cpm:available-process-module)
+  (<- (cpm:matching-process-module ?motion-designator assembly-perception-pm)
+    (desig:desig-prop ?motion-designator (:type :detecting)))
+  (<- (cpm:available-process-module assembly-perception-pm) (true)))
+
 (defmacro with-giskard-controlled-robot (&body body)
   `(cram-process-modules:with-process-modules-running
-       (rs:robosherlock-perception-pm
-         giskard:giskard-pm)
+       (;; rs:robosherlock-perception-pm
+        assembly-perception-pm
+        btr-belief:world-state-detecting-pm
+        giskard:giskard-pm
+        )
      (cpl-impl::named-top-level (:name :top-level)
        ,@body)))
