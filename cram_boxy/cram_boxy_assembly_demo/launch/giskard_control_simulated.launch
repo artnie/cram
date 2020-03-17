@@ -28,6 +28,6 @@
         output="screen" args="-2.5 1.5 0 0 0 0 map odom" />
 
   <!-- giskard whole-body-controller -->
-  <include file="$(find giskardpy)/launch/giskardpy_boxy_sim.launch" />
+  <!-- include file="$(find giskardpy)/launch/giskardpy_boxy_sim.launch" /-->
  
 </launch>
