@@ -85,4 +85,5 @@
      (:file "setup" :depends-on ("package"))
      (:file "projection-demo" :depends-on ("package"))
      (:file "demo" :depends-on ("package" "projection-demo"))
-     (:file "utils" :depends-on ("package" "demo"))))))
+     (:file "utils" :depends-on ("package" "demo"))
+     (:file "phase-mock" :depends-on ("package" "utils"))))))
