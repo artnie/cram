@@ -53,7 +53,7 @@
 (defparameter *holder-underbody-rad-z* 0.024)
 (defparameter *holder-plane-horizontal-rad-x* 0.1015)
 (defparameter *holder-plane-horizontal-rad-y* 0.05)
-(defparameter *holder-plane-horizontal-rad-z* 0.0335)
+(defparameter *holder-plane-horizontal-rad-z* 0.1202)
 (defparameter *holder-window-rad-x* 0.026)
 (defparameter *holder-window-rad-y* 0.025)
 (defparameter *holder-window-rad-z* 0.017)
@@ -79,48 +79,48 @@
 (defparameter *object-spawning-data*
   `((big-wooden-plate :big-wooden-plate (0.823 0.698 0.513)
                       ((,*plate-rad-x* ,*plate-rad-y* ,(- *plate-rad-z*)) (0 0 0 1)))
-    ;; (holder-bolt :holder-bolt ,*yellow-plastic*
-    ;;              ((,*holder-bolt-rad-x* ,*holder-bolt-rad-y* ,*holder-bolt-rad-z*) (0 0 0 1)))
-    ;; (holder-upper-body :holder-upper-body ,*yellow-plastic*
-    ;;                    ((,(+ 0.05 *holder-upperbody-rad-x*) 0.10 ,*holder-upperbody-rad-z*)
-    ;;                     (0 0 0 1)))
-    ;; (holder-bottom-wing :holder-bottom-wing ,*gray-plastic*
-    ;;                     ((,(+ 0.1 *holder-bottom-wing-rad-x*)
-    ;;                       ,(- 0.3 *holder-bottom-wing-rad-y*)
-    ;;                       ,*holder-bottom-wing-rad-z*)
-    ;;                      ,man-int:*rotation-around-z-90-list*))
-    ;; (holder-underbody :holder-underbody ,*yellow-plastic*
-    ;;                   ((,(+ 0.05 *holder-underbody-rad-x*) 0.4 ,*holder-underbody-rad-z*)
-    ;;                    (0 0 0 1)))
-    ;; (holder-plane-horizontal :holder-plane-horizontal ,*yellow-plastic*
-    ;;                          ((,(+ 0.05 *holder-plane-horizontal-rad-x*)
-    ;;                            0.6
-    ;;                            ,*holder-plane-horizontal-rad-z*)
-    ;;                           (0 0 0 1)))
-    ;; (holder-window :holder-window ,*gray-plastic*
-    ;;                ((,*holder-window-rad-x*
-    ;;                  ,(+ 0.75 *holder-window-rad-y*)
-    ;;                  ,*holder-window-rad-z*)
-    ;;                 (0 0 0 1)))
-    ;; (holder-plane-vertical :holder-plane-vertical ,*yellow-plastic*
-    ;;                        ((,*holder-plane-vertical-rad-x*
-    ;;                          ,(- 1.0 *holder-plane-vertical-rad-y*)
-    ;;                          ,*holder-plane-vertical-rad-z*)
-    ;;                         (0 0 0 1)))
-    ;; (holder-top-wing :holder-top-wing ,*yellow-plastic*
-    ;;                  ((,(+ 0.15 *holder-top-wing-rad-x*)
-    ;;                    ,(- 1.15 *holder-top-wing-rad-y*)
-    ;;                    ,*holder-top-wing-rad-z*)
-    ;;                   ,man-int:*rotation-around-z-90-list*))
+    (holder-bolt :holder-bolt ,*yellow-plastic*
+                 ((,*holder-bolt-rad-x* ,*holder-bolt-rad-y* ,*holder-bolt-rad-z*) (0 0 0 1)))
+    (holder-upper-body :holder-upper-body ,*yellow-plastic*
+                       ((,(+ 0.05 *holder-upperbody-rad-x*) 0.10 ,*holder-upperbody-rad-z*)
+                        (0 0 0 1)))
+    (holder-bottom-wing :holder-bottom-wing ,*gray-plastic*
+                        ((,(+ 0.1 *holder-bottom-wing-rad-x*)
+                          ,(- 0.3 *holder-bottom-wing-rad-y*)
+                          ,*holder-bottom-wing-rad-z*)
+                         ,man-int:*rotation-around-z-90-list*))
+    (holder-underbody :holder-underbody ,*yellow-plastic*
+                      ((,(+ 0.05 *holder-underbody-rad-x*) 0.4 ,*holder-underbody-rad-z*)
+                       (0 0 0 1)))
+    (holder-plane-horizontal :holder-plane-horizontal ,*yellow-plastic*
+                             ((,(+ 0.05 *holder-plane-horizontal-rad-x*)
+                               0.6
+                               ,*holder-plane-horizontal-rad-z*)
+                              (0 0 0 1)))
+    (holder-window :holder-window ,*gray-plastic*
+                   ((,*holder-window-rad-x*
+                     ,(+ 0.75 *holder-window-rad-y*)
+                     ,*holder-window-rad-z*)
+                    (0 0 0 1)))
+    (holder-plane-vertical :holder-plane-vertical ,*yellow-plastic*
+                           ((,*holder-plane-vertical-rad-x*
+                             ,(- 1.0 *holder-plane-vertical-rad-y*)
+                             ,*holder-plane-vertical-rad-z*)
+                            (0 0 0 1)))
+    (holder-top-wing :holder-top-wing ,*yellow-plastic*
+                     ((,(+ 0.15 *holder-top-wing-rad-x*)
+                       ,(- 1.15 *holder-top-wing-rad-y*)
+                       ,*holder-top-wing-rad-z*)
+                      ,man-int:*rotation-around-z-90-list*))
 
-    ;; ;; rear wing is already well positioned
-    ;; (rear-wing :rear-wing ,*yellow-plane*
-    ;;            ((0.079 0.599 0.056)
-    ;;             ,man-int:*rotation-around-z+90-list*))
+    ;; rear wing is already well positioned
+    (rear-wing :rear-wing ,*yellow-plane*
+               ((0.079 0.599 0.137);; (0.079 0.599 0.056)
+                ,man-int:*rotation-around-z+90-list*))
 
-    ;; bolts are used intermediately
-    ;; (bolt-1 :bolt ,*gray-plane*
-    ;;         ((0.015 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
+    ;; ;; bolts are used intermediately
+    (bolt-1 :bolt ,*gray-plane*
+            ((0.015 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
     ;; (bolt-2 :bolt ,*gray-plane*
     ;;         ((0.0325 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
     ;; (bolt-3 :bolt ,*gray-plane*
@@ -130,17 +130,17 @@
     ;; (bolt-5 :bolt ,*gray-plane*
     ;;         ((0.085 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
 
-    ;; first part of scenario on horizontal holder
+    ;; ;; first part of scenario on horizontal holder
     (chassis :chassis ,*yellow-plane*
              ((0.2 0.9 ,*chassis-rad-z*) ,man-int:*rotation-around-z-90-list*))
-    ;; (bottom-wing :bottom-wing ,*cyan-plane*
-    ;;              ((0.134 0.25 0.093) (0 0 0 1)))
-    ;; (underbody :underbody ,*red-plane*
-    ;;            ((0.145 0.399 0.024) (0 0 0 1)))
-    ;; (motor-grill :motor-grill ,*black-plane*
-    ;;              ((0.238 0.399 0.039) ,man-int:*rotation-around-y+90-list*))
-    ;; (upper-body :upper-body ,*red-plane*
-    ;;             ((0.119 0.1003 0.0482) (0 0 0 1)))
+    (bottom-wing :bottom-wing ,*cyan-plane*
+                 ((0.134 0.25 0.093) (0 0 0 1)))
+    (underbody :underbody ,*red-plane*
+               ((0.145 0.399 0.024) (0 0 0 1)))
+    (motor-grill :motor-grill ,*black-plane*
+                 ((0.238 0.399 0.039) ,man-int:*rotation-around-y+90-list*))
+    (upper-body :upper-body ,*red-plane*
+                ((0.119 0.1003 0.0482) (0 0 0 1)))
     ;; (top-wing :top-wing ,*cyan-plane*
     ;;           ((0.18522 1.11423 0.08852) (0 0 0 1)))
     ;; (window :window ,*transparent-plane*
@@ -161,8 +161,9 @@
 
 
 (defun spawn-objects-on-plate (&optional (spawning-poses *object-spawning-data*))
-  (btr-utils:kill-all-objects)
+  ;; (btr-utils:kill-all-objects)
   (btr:detach-all-objects (btr:get-robot-object))
+  (mapcar (alexandria:compose #'btr:detach-all-objects #'car) spawning-poses)
   ;; let ((object-types '(:breakfast-cereal :cup :bowl :spoon :milk)))
   ;; spawn objects at default poses
   (let ((objects (mapcar (lambda (object-name-type-pose-list)
@@ -188,7 +189,8 @@
                                                             object-relative-pose))
                                                           (cl-transforms:orientation
                                                            object-relative-pose))))))
-                               (visualize-part object-name object-color)
+                               (visualize-part object-name)
+                               (add-to-collision-scene object-name)
                                spawned-obj)))
                          spawning-poses)))
     objects))
@@ -231,12 +233,15 @@
   ;;(setf cram-robosherlock::*no-robosherlock-mode* t)
   (spawn-objects-on-plate)
   (initialize-attachments)
-  (urdf-proj:with-projected-robot
+  (with-giskard-controlled-robot ;; urdf-proj:with-projected-robot
 
     ;; 1
-    (go-connect :chassis *base-very-left-side-left-hand-pose*
+    (go-connect :chassis *base-somewhat-left-side-left-hand-pose* ;; *base-very-left-side-left-hand-pose*
                 :holder-plane-horizontal *base-middle-side-left-hand-pose*
                 :horizontal-attachment)
+    ;; (go-connect :chassis *base-somewhat-left-side-left-hand-pose* ;; *base-very-left-side-left-hand-pose*
+    ;;             :holder-plane-horizontal-tall *base-middle-side-left-hand-pose*
+    ;;             :horizontal-attachment)
     ;; 2
     (go-connect :bottom-wing *base-very-right-side-left-hand-pose*
                 :chassis *base-left-side-left-hand-pose*
@@ -311,13 +316,25 @@
 (defun initialize-attachments ()
   (btr:attach-object 'motor-grill 'underbody))
 
-(defun go-perceive (?object-type ?nav-goal)
-  ;; park arms
+(defun home-arms ()
   (exe:perform
    (desig:an action
              (type positioning-arm)
              (left-configuration park)
-             (right-configuration park)))
+             (right-configuration park))))
+
+(defun home-torso ()
+  (exe:perform
+   (desig:a motion (type moving-torso)
+            (joint-angle -0.3))))
+
+(defun go-perceive (?object-type ?nav-goal)
+  ;; park arms
+  (home-torso)
+  (home-arms)
+
+  
+
   ;; drive to right location
   (let ((?pose (cl-transforms-stamped:pose->pose-stamped
                 cram-tf:*fixed-frame*
@@ -328,38 +345,46 @@
                (type going)
                (target (desig:a location
                                 (pose ?pose))))))
-  ;; look down
+
   (exe:perform
-   (desig:an action
-             (type looking)
-             (direction down-left)))
-  ;; perceive object
-  (let ((?object
-          (exe:perform
-           (desig:an action
-                     (type detecting)
-                     (object (desig:an object (type ?object-type)))))))
-    ;; look away
-    (exe:perform
-     (desig:an action
-               (type looking)
-               (direction away)))
-    ?object))
+       (desig:a motion
+                (type world-state-detecting)
+                (object (desig:an object (type ?object-type)))))
+  ;; ;; look down
+  ;; (exe:perform
+  ;;  (desig:an action
+  ;;            (type looking)
+  ;;            (direction down-left)))
+  ;; ;; perceive object
+  ;; (let ((?object
+  ;;         (exe:perform
+  ;;          (desig:an action
+  ;;                    (type detecting)
+  ;;                    (object (desig:an object (type ?object-type)))))))
+  ;;   ;; look away
+  ;;   (exe:perform
+  ;;    (desig:an action
+  ;;              (type looking)
+  ;;              (direction away)))
+  ;;   ?object)
+  )
 
 (defun go-pick (?object-type ?nav-goal)
   ;; go and perceive object
   (let ((?object
-          (go-perceive ?object-type ?nav-goal)))
-    (exe:perform
-     (desig:an action
-               (type positioning-arm)
-               (left-configuration park)))
+          (go-perceive ?object-type ?nav-goal))
+        (?constraint '(("left_gripper_joint" "right_gripper_joint") (0.1 0.07))))
+    (home-torso)
+    (home-arms)
+    
     ;; pick object
     (exe:perform
      (desig:an action
                (type picking-up)
                (arm left)
-               (object ?object)))
+               (object ?object)
+               ;; (constraints ((left_gripper_joint) (0.04)))
+               ))
     ?object))
 
 (defun go-pick-place (?object-type ?nav-goal)

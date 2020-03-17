@@ -110,7 +110,9 @@
   (cram-bullet-reasoning:clear-costmap-vis-object)
 
   (btr:add-objects-to-mesh-list "assembly_models" :directory "fixtures" :extension "stl")
-  (btr:add-objects-to-mesh-list "assembly_models" :directory "battat/convention" :extension "stl"))
+  (btr:add-objects-to-mesh-list "assembly_models" :directory "battat/convention" :extension "stl")
+
+  (add-kitchen-to-giskard))
 
 (roslisp-utilities:register-ros-init-function init-projection)
 
@@ -150,3 +152,18 @@
         )
      (cpl-impl::named-top-level (:name :top-level)
        ,@body)))
+;; PM and macro stuff ;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Giskard environment ;;
+(defun add-kitchen-to-giskard ()
+  (when (btr:get-environment-object)
+    (giskard::call-giskard-environment-service
+     :add-environment
+     :name (roslisp-utilities:rosify-underscores-lisp-name (btr:name (btr:get-environment-object)))
+     :pose (cl-transforms-stamped:pose->pose-stamped
+            cram-tf:*fixed-frame* 0.0 (btr:pose (btr:get-environment-object)))
+     :joint-state-topic "kitchen/joint_states")))
+;; Giskard environment ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;

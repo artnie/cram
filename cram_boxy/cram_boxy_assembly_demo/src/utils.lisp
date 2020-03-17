@@ -16,37 +16,35 @@
     :remove :name (roslisp-utilities:rosify-underscores-lisp-name name))))
 
 (defun reset ()
+  ;; (coe:clear-belief)
   (mapcar (alexandria:compose #'remove-obj-from-giskard #'first) *object-spawning-data*)
   (giskard::make-giskard-action-client)
-  (spawn-objects-on-plate))
+  (spawn-objects-on-plate)
+  (initialize-attachments))
 
-(defun chassis-in-hand ()
-  (let* ((pose-in-map
-           (cram-tf:ensure-pose-in-frame
-            (cl-tf:pose->pose-stamped
-             "left_arm_7_link" 0.0
-             (btr:ensure-pose `((0.001d0 -0.001d0 0.298d0)
-                                (0.71405d0 0.7d0 0.006d0 0.005d0))))
-            "map"))
-         (btr-pose (pose-stamped->btr-pose pose-in-map)))
-    (when (btr:attached-objects (btr:get-robot-object))
-      (cram-occasions-events:on-event
-       (make-instance 'cpoe:object-detached-robot
-                      :arm :left
-                      :object-name 'chassis)))
-    (btr-utils:spawn-object 'chassis :chassis :pose btr-pose)
-    (cram-occasions-events:on-event
-     (make-instance 'cpoe:object-attached-robot
-                    :arm :left
-                    :object-name 'chassis))))
-    
+(defun window ()
+  (prolog `(and (btr:bullet-world ?w)
+                    (btr:debug-window ?w))))  
 
-(defgeneric pose-stamped->btr-pose (pose)
-  (:method ((pose cl-tf:pose-stamped))
+(defgeneric pose*->btr-pose (pose)
+  (:documentation "Returns pose or pose-stamped as btr-style list of orig and rot.")
+  (:method ((pose cl-tf:pose))
     (with-slots ((o cl-tf:origin) (r cl-tf:orientation)) pose
         (with-slots ((x cl-tf:x) (y cl-tf:y) (z cl-tf:z)) o
            (with-slots ((ax cl-tf:x) (ay cl-tf:y) (az cl-tf:z) (w cl-tf:w)) r
-             `(,(list x y z) ,(list ax ay az w)))))))
+             `(,(list x y z) ,(list ax ay az w))))))
+  (:method ((pose cl-tf:pose-stamped))
+    (pose*->btr-pose (cl-tf:pose-stamped->pose pose))))
+
+(defgeneric pose-between-objects (object-target object-source)
+  (:documentation "Pose of 'source' in 'target' regarding btr objects.")
+  (:method ((object-target btr:object) (object-source btr:object))
+    (cl-tf:transform->pose
+     (cl-tf:transform* (cl-tf:transform-inv (cl-tf:pose->transform (btr:pose object-target))) 
+                       (cl-tf:pose->transform (btr:pose object-source)))))
+  (:method ((object-target symbol) (object-source symbol))
+    (pose-between-objects (btr:object btr:*current-bullet-world* object-target)
+                          (btr:object btr:*current-bullet-world* object-source))))
 
 
 ;;;;;;;;;;;;;;;;;;;
@@ -111,14 +109,25 @@
 ;; VISUALIZATION ;;
 ;;;;;;;;;;;;;;;;;;;
 
-#+desig-for-moving-camera-to-pose
-(let ((?goal-pose (cl-tf:make-pose-stamped
-                   "base_footprint" 0.0
-                   (cl-tf:make-3d-vector 1.0 0.0 2.0)
-                   (cl-tf:make-quaternion 0.8660254037844386 0 0.5 0))))
-  (with-giskard-controlled-robot
-    (exe:perform
-     (desig:an action
-               (type looking)
-               (target (desig:a location
-                                (pose ?goal-pose)))))))
+
+;;;;;;;;;;;;;;;
+;; COLLISION ;;
+(defun add-to-collision-scene (object-name)
+  (declare (type symbol object-name))
+  (giskard::call-giskard-environment-service
+   :add
+   :name (roslisp-utilities:rosify-underscores-lisp-name object-name)
+   :pose (cl-tf:pose->pose-stamped "map" 0.0
+                                   (btr:object-pose object-name))
+   :dimensions (with-slots (cl-tf:x cl-tf:y cl-tf:z)
+                   (btr:calculate-bb-dims (btr:object btr:*current-bullet-world* object-name))
+                 (list cl-tf:x cl-tf:y cl-tf:z))))
+
+(defun update-collision-scene (object-name)
+  (let ((giskard-name (roslisp-utilities:rosify-underscores-lisp-name object-name)))
+    (giskard::call-giskard-environment-service
+     :remove
+     :name giskard-name)
+    (add-to-collision-scene object-name)))
+;; COLLISION ;;
+;;;;;;;;;;;;;;;
