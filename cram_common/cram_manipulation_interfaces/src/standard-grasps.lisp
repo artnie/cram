@@ -77,6 +77,10 @@
   '((0  1  0)
     (1  0  0)
     (0  0 -1)))
+(defparameter *z-across-x-grasp+180z-rotation*
+  '(( 0 -1  0)
+    (-1  0  0)
+    ( 0  0 -1)))
 (defparameter *z-across-y-grasp-rotation*
   '((1  0  0)
     (0 -1  0)

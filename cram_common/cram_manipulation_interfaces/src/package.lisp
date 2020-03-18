@@ -93,6 +93,7 @@
    #:*y-across-x-grasp-rotation*
    #:*-y-across-x-grasp-rotation*
    #:*z-across-x-grasp-rotation*
+   #:*z-across-x-grasp+180z-rotation*
    #:*z-across-y-grasp-rotation*
    #:*z-diagonal-grasp-rotation*
    #:*-z-across-x-grasp-rotation*
@@ -101,6 +102,7 @@
    #:*rotation-around-z+90-matrix*
    #:*rotation-around-x+90-matrix*
    #:*rotation-around-z-180-and-x+90-matrix*
+   #:*rotation-around-z-180-matrix*
    #:*identity-matrix*
    #:*rotation-around-x+90-list*
    #:*rotation-around-x-90-list*
