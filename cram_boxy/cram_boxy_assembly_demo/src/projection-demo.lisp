@@ -121,14 +121,14 @@
     ;; ;; bolts are used intermediately
     (bolt-1 :bolt ,*gray-plane*
             ((0.015 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
-    ;; (bolt-2 :bolt ,*gray-plane*
-    ;;         ((0.0325 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
-    ;; (bolt-3 :bolt ,*gray-plane*
-    ;;         ((0.05 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
-    ;; (bolt-4 :bolt ,*gray-plane*
-    ;;         ((0.0675 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
-    ;; (bolt-5 :bolt ,*gray-plane*
-    ;;         ((0.085 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
+    (bolt-2 :bolt ,*gray-plane*
+            ((0.0325 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
+    (bolt-3 :bolt ,*gray-plane*
+            ((0.05 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
+    (bolt-4 :bolt ,*gray-plane*
+            ((0.0675 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
+    (bolt-5 :bolt ,*gray-plane*
+            ((0.085 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
 
     ;; ;; first part of scenario on horizontal holder
     (chassis :chassis ,*yellow-plane*
@@ -141,10 +141,10 @@
                  ((0.238 0.399 0.039) ,man-int:*rotation-around-y+90-list*))
     (upper-body :upper-body ,*red-plane*
                 ((0.119 0.1003 0.0482) (0 0 0 1)))
-    ;; (top-wing :top-wing ,*cyan-plane*
-    ;;           ((0.18522 1.11423 0.08852) (0 0 0 1)))
-    ;; (window :window ,*transparent-plane*
-    ;;         ((0.024 0.775 0.01962) (0 0 0 1)))
+    (top-wing :top-wing ,*cyan-plane*
+              ((0.18522 1.11423 0.08852) (0 0 0 1)))
+    (window :window ,*transparent-plane*
+            ((0.024 0.775 0.01962) (0 0 0 1)))
 
     ;; second part of scenario on vertical holder
     ;; (propeller :propeller ,*yellow-plane*
@@ -231,7 +231,8 @@
 ;;; * screw bottom body
 (defun demo ()
   ;;(setf cram-robosherlock::*no-robosherlock-mode* t)
-  (spawn-objects-on-plate)
+  ;; (spawn-objects-on-plate)
+  (reset)
   (initialize-attachments)
   (with-giskard-controlled-robot ;; urdf-proj:with-projected-robot
 
@@ -239,9 +240,6 @@
     (go-connect :chassis *base-somewhat-left-side-left-hand-pose* ;; *base-very-left-side-left-hand-pose*
                 :holder-plane-horizontal *base-middle-side-left-hand-pose*
                 :horizontal-attachment)
-    ;; (go-connect :chassis *base-somewhat-left-side-left-hand-pose* ;; *base-very-left-side-left-hand-pose*
-    ;;             :holder-plane-horizontal-tall *base-middle-side-left-hand-pose*
-    ;;             :horizontal-attachment)
     ;; 2
     (go-connect :bottom-wing *base-very-right-side-left-hand-pose*
                 :chassis *base-left-side-left-hand-pose*

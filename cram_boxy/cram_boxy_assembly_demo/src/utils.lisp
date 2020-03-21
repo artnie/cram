@@ -19,6 +19,7 @@
   ;; (coe:clear-belief)
   (mapcar (alexandria:compose #'remove-obj-from-giskard #'first) *object-spawning-data*)
   (giskard::make-giskard-action-client)
+  (add-kitchen-to-giskard)
   (spawn-objects-on-plate)
   (initialize-attachments))
 
