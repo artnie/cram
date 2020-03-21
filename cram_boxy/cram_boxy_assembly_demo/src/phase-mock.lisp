@@ -1,5 +1,38 @@
 (in-package :demo)
 
+(defparameter *phases*
+  `((chassis holder-plane-horizontal :horizontal-attachment)
+    (bottom-wing chassis :wing-attachment)
+    (underbody bottom-wing :body-attachment)
+    (upper-body underbody :body-on-body)
+    (bolt-1 upper-body :rear-thread)
+    (top-wing upper-body :wing-attachment)
+    (bolt-2 top-wing :middle-thread)
+    (window top-wing :window-attachment)
+    (bolt-3 window :window-thread)
+    (top-wing holder-plane-vertical :vertical-attachment)
+    (propeller motor-grill :propeller-attachment)
+    (bolt-4 propeller :propeller-thread)))
+
+(defun end-phase (phase &key (only nil) (reset nil))
+  (declare (type number phase))
+  (when reset (reset))
+  (if (<= 0 phase (1- (length *phases*)))
+      (flet ((attach (name other-name attachment)
+               (cram-occasions-events:on-event
+                  (make-instance 'cpoe:object-attached-object
+                                 :object-name name :other-object-name other-name
+                                 :attachment-type attachment))
+               (visualize-part name)
+               (update-collision-scene name)))
+        (if only
+            (destructuring-bind (name other-name attachment) (nth phase *phases*)
+              (attach name other-name attachment))
+            (loop for n to phase
+                  do (apply #'attach (nth n *phases*))
+                     (when (eq n 2) (attach 'underbody 'rear-wing :loose)))))
+      (roslisp:ros-warn (assembly phase-mock) "There is no phase ~a." phase)))
+
 (defun chassis-in-hand ()
   (let* ((pose-in-map
            (cram-tf:ensure-pose-in-frame
@@ -25,56 +58,3 @@
                 (type world-state-detecting)
                 (object (desig:an object (type :chassis))))))))
 
-(defun end- (phase)
-  (declare (type number phase))
-  (let ((phase-fun-name (intern (format nil "END-~a" phase)))
-        phase-fun)
-    (handler-case (setf phase-fun (symbol-function phase-fun-name))
-      (undefined-function () (roslisp:ros-warn (assembly phase-mock) "no mock called ~a" phase-fun-name)))
-    (when phase-fun
-      (with-giskard-controlled-robot
-        (btr:detach-all-objects (btr:get-robot-object))
-        (funcall phase-fun)))))
- 
-
-(defun end-1 ()
-  (cram-occasions-events:on-event
-   (make-instance 'cpoe:object-attached-object
-                  :object-name 'chassis
-                  :other-object-name 'holder-plane-horizontal
-                  :attachment-type :horizontal-attachment))
-  (visualize-part 'chassis)
-  (update-collision-scene 'chassis))
-
-
-(defun end-2 ()
-  (end-1)
-  (cram-occasions-events:on-event
-   (make-instance 'cpoe:object-attached-object
-                  :object-name 'bottom-wing
-                  :other-object-name 'chassis
-                  :attachment-type :wing-attachment))
-  (visualize-part 'bottom-wing)
-  (update-collision-scene 'bottom-wing))
-
-
-
-(defun end-3 ()
-  (end-2)
-  (cram-occasions-events:on-event
-   (make-instance 'cpoe:object-attached-object
-                  :object-name 'underbody
-                  :other-object-name 'bottom-wing
-                  :attachment-type :body-attachment))
-  (visualize-part 'underbody)
-  (update-collision-scene 'underbody))
-
-(defun end-4 ()
-  (end-3)
-  (cram-occasions-events:on-event
-   (make-instance 'cpoe:object-attached-object
-                  :object-name 'upper-body
-                  :other-object-name 'underbody
-                  :attachment-type :body-on-body))
-  (visualize-part 'upper-body)
-  (update-collision-scene 'upper-body))
