@@ -86,7 +86,7 @@
              (desig:designator :action ((:type ?action-type)
                                         (:left-poses ?left-poses)
                                         (:right-poses ?right-poses)
-                                        (:collision-mode :allow-hand)
+                                        (:collision-mode :allow-fingers)
                                         (:collision-object-b ?object-name)
                                         (:collision-object-b-link ?object-link)
                                         (:constraints ?constraints))
@@ -137,7 +137,7 @@
     (desig:designator :action ((:type :putting)
                                (:left-poses ?left-poses)
                                (:right-poses ?right-poses)
-                               (:collision-mode :allow-all;; :allow-attached
+                               (:collision-mode :allow-attached
                                                 )
                                (:collision-object-b ?other-object-name)
                                (:collision-object-b-link ?object-link)
