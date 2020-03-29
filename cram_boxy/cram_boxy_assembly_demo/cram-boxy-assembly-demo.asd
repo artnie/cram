@@ -82,9 +82,9 @@
   ((:module "src"
     :components
     ((:file "package")
-     (:file "setup" :depends-on ("package"))
-     (:file "utils" :depends-on ("package"))
-     (:file "projection-demo" :depends-on ("package" "utils"))
-     (:file "demo" :depends-on ("package" "projection-demo"))
-    
-     (:file "phase-mock" :depends-on ("package" "utils"))))))
+     (:file "parameters" :depends-on ("package"))
+     (:file "setup" :depends-on ("package" "parameters"))
+     (:file "utils" :depends-on ("package" "parameters"))
+     (:file "projection-demo" :depends-on ("package" "utils" "parameters"))
+     ;; (:file "demo" :depends-on ("package" "projection-demo"))
+     (:file "phase-mock" :depends-on ("package" "utils" "parameters"))))))
