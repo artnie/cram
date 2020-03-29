@@ -67,10 +67,12 @@
   0.03)
 (defmethod man-int:get-action-gripper-opening :heuristics 20 ((object-type (eql :window)))
   0.02)
+(defmethod man-int:get-action-gripper-opening :heuristics 20 ((object-type (eql :chassis)))
+  0.06)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; CHASSIS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defparameter *chassis-grasp-z-offset* -0.02)
+(defparameter *chassis-grasp-z-offset* 0.00)
 
 ;; TOP grasp
 (man-int:def-object-type-to-gripper-transforms :chassis '(:left :right) :top
@@ -114,8 +116,9 @@
                        0.0
                        ,*bottom-wing-grasp-z-offset*)
   :grasp-rot-matrix man-int:*-x-across-y-grasp-rotation*
-  :pregrasp-offsets `(,(- *default-z-offset*) ,(- *default-z-offset*) 0.0)
-  :2nd-pregrasp-offsets `(0.0 ,(/ *default-z-offset* -2) 0.0)
+  :pregrasp-offsets `(,(- *default-z-offset*) 0.0 0.0)
+  ;; `(,(- *default-z-offset*) ,(- *default-z-offset*) 0.0)
+  :2nd-pregrasp-offsets `(,(/ *default-z-offset* -2) 0.0 0.0) ;; `(0.0 ,(/ *default-z-offset* -2) 0.0)
   :lift-offsets *default-small-lift-offsets*
   :2nd-lift-offsets *default-lift-offsets*)
 
@@ -131,8 +134,8 @@
   :grasp-rot-matrix man-int:*z-across-x-grasp-rotation*
   :pregrasp-offsets *default-lift-offsets*
   :2nd-pregrasp-offsets *default-lift-offsets*
-  :lift-offsets *default-small-lift-offsets*
-  :2nd-lift-offsets `(0.0 0.0 ,(+ *default-z-offset* 0.05)))
+  :lift-offsets *default-lift-offsets*
+  :2nd-lift-offsets `(0.0 0.0 ,(+ *default-z-offset* 0.1)))
 
 (man-int:def-object-type-to-gripper-transforms :underbody :right :top
   :grasp-translation `(,*underbody-grasp-x-offset* ,(- *underbody-grasp-y-offset*) ,*underbody-grasp-z-offset*)
@@ -140,7 +143,7 @@
   :pregrasp-offsets *default-lift-offsets*
   :2nd-pregrasp-offsets *default-lift-offsets*
   :lift-offsets *default-small-lift-offsets*
-  :2nd-lift-offsets `(0.0 0.0 ,(+ *default-z-offset* 0.05)))
+  :2nd-lift-offsets `(0.0 0.0 ,(+ *default-z-offset* 0.1)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; UPPER-BODY ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
