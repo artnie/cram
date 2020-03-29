@@ -4,6 +4,7 @@
   `((chassis holder-plane-horizontal :horizontal-attachment)
     (bottom-wing chassis :wing-attachment)
     (underbody bottom-wing :body-attachment)
+    ;; underbody -> rear-wing
     (upper-body underbody :body-on-body)
     (bolt-1 upper-body :rear-thread)
     (top-wing upper-body :wing-attachment)
@@ -30,7 +31,8 @@
               (attach name other-name attachment))
             (loop for n to phase
                   do (apply #'attach (nth n *phases*))
-                     (when (eq n 2) (attach 'underbody 'rear-wing :loose)))))
+                     ;; (when (eq n 2) (attach 'underbody 'rear-wing :loose))
+                  )))
       (roslisp:ros-warn (assembly phase-mock) "There is no phase ~a." phase)))
 
 (defun chassis-in-hand ()

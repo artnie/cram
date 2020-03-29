@@ -52,7 +52,7 @@
 (defparameter *holder-underbody-rad-y* 0.025)
 (defparameter *holder-underbody-rad-z* 0.024)
 (defparameter *holder-plane-horizontal-rad-x* 0.1015)
-(defparameter *holder-plane-horizontal-rad-y* 0.05)
+(defparameter *holder-plane-horizontal-rad-y* 0.06)
 (defparameter *holder-plane-horizontal-rad-z* 0.1202)
 (defparameter *holder-window-rad-x* 0.026)
 (defparameter *holder-window-rad-y* 0.025)
@@ -94,7 +94,8 @@
                        (0 0 0 1)))
     (holder-plane-horizontal :holder-plane-horizontal ,*yellow-plastic*
                              ((,(+ 0.05 *holder-plane-horizontal-rad-x*)
-                               0.6
+                               ;; ,(- 0.0 *holder-plane-horizontal-rad-y*)
+                               ,(- 1.2 *holder-plane-horizontal-rad-y*)
                                ,*holder-plane-horizontal-rad-z*)
                               (0 0 0 1)))
     (holder-window :holder-window ,*gray-plastic*
@@ -109,26 +110,27 @@
                             (0 0 0 1)))
     (holder-top-wing :holder-top-wing ,*yellow-plastic*
                      ((,(+ 0.15 *holder-top-wing-rad-x*)
-                       ,(- 1.15 *holder-top-wing-rad-y*)
+                       ;; ,(- 1.15 *holder-top-wing-rad-y*)
+                       ,(- 0.6 *holder-top-wing-rad-y*)
                        ,*holder-top-wing-rad-z*)
                       ,man-int:*rotation-around-z-90-list*))
 
-    ;; rear wing is already well positioned
-    (rear-wing :rear-wing ,*yellow-plane*
-               ((0.079 0.599 0.137);; (0.079 0.599 0.056)
-                ,man-int:*rotation-around-z+90-list*))
+    ;; ;; rear wing is already well positioned
+    ;; (rear-wing :rear-wing ,*yellow-plane*
+    ;;            ((0.079 0.599 0.137);; (0.079 0.599 0.056)
+    ;;             ,man-int:*rotation-around-z+90-list*))
 
-    ;; ;; bolts are used intermediately
-    (bolt-1 :bolt ,*gray-plane*
-            ((0.015 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
-    (bolt-2 :bolt ,*gray-plane*
-            ((0.0325 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
-    (bolt-3 :bolt ,*gray-plane*
-            ((0.05 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
-    (bolt-4 :bolt ,*gray-plane*
-            ((0.0675 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
-    (bolt-5 :bolt ,*gray-plane*
-            ((0.085 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
+    ;; ;; ;; bolts are used intermediately
+    ;; (bolt-1 :bolt ,*gray-plane*
+    ;;         ((0.015 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
+    ;; (bolt-2 :bolt ,*gray-plane*
+    ;;         ((0.0325 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
+    ;; (bolt-3 :bolt ,*gray-plane*
+    ;;         ((0.05 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
+    ;; (bolt-4 :bolt ,*gray-plane*
+    ;;         ((0.0675 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
+    ;; (bolt-5 :bolt ,*gray-plane*
+    ;;         ((0.085 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
 
     ;; ;; first part of scenario on horizontal holder
     (chassis :chassis ,*yellow-plane*
@@ -142,9 +144,9 @@
     (upper-body :upper-body ,*red-plane*
                 ((0.119 0.1003 0.0482) (0 0 0 1)))
     (top-wing :top-wing ,*cyan-plane*
-              ((0.18522 1.11423 0.08852) (0 0 0 1)))
-    (window :window ,*transparent-plane*
-            ((0.024 0.775 0.01962) (0 0 0 1)))
+              ((0.18522 ,(- 1.11423 0.55) 0.08852) (0 0 0 1)))
+    ;; (window :window ,*transparent-plane*
+    ;;         ((0.024 0.775 0.01962) (0 0 0 1)))
 
     ;; second part of scenario on vertical holder
     ;; (propeller :propeller ,*yellow-plane*
@@ -229,6 +231,84 @@
 ;;; * put other wheel on
 ;;; * screw nut onto wheel
 ;;; * screw bottom body
+(defparameter *assembly-steps*
+  `(
+  ;; 0
+  (go-connect :chassis *base-somewhat-left-side-left-hand-pose* ;; *base-very-left-side-left-hand-pose*
+              :holder-plane-horizontal *base-left-side-left-hand-pose* ;; *base-middle-side-left-hand-pose*
+              :horizontal-attachment)
+  ;; 1
+  (go-connect :bottom-wing *base-very-right-side-left-hand-pose*
+              :chassis *base-very-left-side-left-hand-pose* ;; *base-left-side-left-hand-pose*
+              :wing-attachment)
+
+  ;; 2
+  (go-connect :underbody *base-middle-side-left-hand-pose*
+              :bottom-wing *base-left-side-left-hand-pose* ;; *base-middle-side-left-hand-pose*
+              :body-attachment)
+
+  ;; we put the underbody on the bottom-wing but by doing that
+  ;; we also put it on the rear-wing.
+  ;; as there is no explicit placing action, the two will not be
+  ;; attached automatically.
+  ;; so we have to attach them manually unfortunately.
+  ;; this is required for later moving the whole plane onto another holder
+  ;; 3
+  (btr:attach-object 'underbody 'rear-wing)
+
+  ;; 4
+  (go-connect :upper-body *base-right-side-left-hand-pose*
+              :underbody *base-left-side-left-hand-pose*
+              :body-on-body)
+  ;; 5
+  (go-connect :bolt *base-right-side-left-hand-pose*
+              :upper-body *base-left-side-left-hand-pose*
+              :rear-thread)
+  ;; 6
+  (go-connect :top-wing *base-left-side-left-hand-pose*
+              :upper-body *base-left-side-left-hand-pose*
+              :wing-attachment)
+  ;; 7
+  (go-connect :bolt *base-right-side-left-hand-pose*
+              :top-wing *base-left-side-left-hand-pose*
+              :middle-thread)
+  ;; 8
+  (go-connect :window *base-somewhat-left-side-left-hand-pose*
+              :top-wing *base-left-side-left-hand-pose*
+              :window-attachment)
+  ;; 9
+  (go-connect :bolt *base-right-side-left-hand-pose*
+              :window *base-left-side-left-hand-pose*
+              :window-thread)
+
+  ;; 10
+  (go-connect :top-wing  *base-somewhat-left-side-left-hand-pose*
+              :holder-plane-vertical *base-left-side-left-hand-pose*
+              ;; or `((,(- *base-x* 0.00) 1.45 0) (0 0 0 1))
+              :vertical-attachment)
+
+  ;; 11
+  (go-connect :propeller `((,(- *base-x* 0.15) 2 0) (0 0 0 1))
+              :motor-grill *base-left-side-left-hand-pose*
+              ;; or `((,(- *base-x* 0.15) 1.8 0) (0 0 0 1))
+              :propeller-attachment)
+
+  ;; 12
+  (go-connect :bolt *base-right-side-left-hand-pose*
+              :propeller *base-left-side-left-hand-pose*
+              ;; or `((,*base-x* 1.85 0) (0 0 0 1))
+              :propeller-thread)))
+
+(defun exec (phase &key only reset)
+  (when reset (reset))
+  (if (<= 0 phase (length *assembly-steps*))
+      (with-giskard-controlled-robot
+        (if only
+            (eval (nth phase *assembly-steps*))
+            (loop for step to phase
+                  do (eval (nth step *assembly-steps*)))))
+      (roslisp:ros-warn (assembly exec) "There is no phase ~a." phase)))
+
 (defun demo ()
   ;;(setf cram-robosherlock::*no-robosherlock-mode* t)
   ;; (spawn-objects-on-plate)
@@ -238,7 +318,7 @@
 
     ;; 1
     (go-connect :chassis *base-somewhat-left-side-left-hand-pose* ;; *base-very-left-side-left-hand-pose*
-                :holder-plane-horizontal *base-middle-side-left-hand-pose*
+                :holder-plane-horizontal *base-left-side-left-hand-pose* ;; *base-middle-side-left-hand-pose*
                 :horizontal-attachment)
     ;; 2
     (go-connect :bottom-wing *base-very-right-side-left-hand-pose*
@@ -325,6 +405,17 @@
   (exe:perform
    (desig:a motion (type moving-torso)
             (joint-angle -0.3))))
+
+(defun home ()
+  (cpl:par
+    (exe:perform
+    (desig:an action
+             (type positioning-arm)
+             (left-configuration park)
+             (right-configuration park)))
+    (exe:perform
+    (desig:a motion (type moving-torso)
+            (joint-angle -0.3)))))
 
 (defun go-perceive (?object-type ?nav-goal)
   ;; park arms
