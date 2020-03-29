@@ -120,24 +120,25 @@
                              "Manipulation messed up: ~a~%Ignoring."
                              e)
            (return)))
-      (exe:perform
-       (desig:an action
-                 (type grasping)
-                 (object ?object-designator)
-                 (left-poses ?first-left-lift-poses)
-                 (right-poses ?first-right-lift-poses)))
-      (exe:perform
-       (desig:an action
-                 (type lifting)
-                 (left-poses ?last-left-lift-poses)
-                 (right-poses ?last-right-lift-poses)))
+      ;; (exe:perform
+      ;;  (desig:an action
+      ;;            (type grasping)
+      ;;            (object ?object-designator)
+      ;;            (left-poses ?first-left-lift-poses)
+      ;;            (right-poses ?first-right-lift-poses)))
       ;; (exe:perform
       ;;  (desig:an action
       ;;            (type lifting)
-      ;;            (left-poses ?left-lift-poses)
-      ;;            (right-poses ?right-lift-poses)
-      ;;            ;; (constraints ?constraints)
-      ;;            ))
+      ;;            (object ?object-designator)
+      ;;            (left-poses ?last-left-lift-poses)
+      ;;            (right-poses ?last-right-lift-poses)))
+      (exe:perform
+       (desig:an action
+                 (type lifting)
+                 (left-poses ?left-lift-poses)
+                 (right-poses ?right-lift-poses)
+                 ;; (constraints ?constraints)
+                 ))
       ))
   (roslisp:ros-info (pick-place place) "Parking")
   (exe:perform
