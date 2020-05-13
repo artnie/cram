@@ -1,3 +1,4 @@
+
 ;;;
 ;;; Copyright (c) 2018, Gayane Kazhoyan <kazhoyan@cs.uni-bremen.de>
 ;;; All rights reserved.
@@ -128,9 +129,13 @@
 (defun detect (?input-designator)
   (declare (type desig:object-designator ?input-designator))
   (roslisp:ros-info (assembly setup) "Mocking detection motion to world-state-detection.")
-  (exe:perform (desig:a motion
-                        (type world-state-detecting)
-                        (object ?input-designator))))
+  (let ((desig (exe:perform (desig:a motion
+                                     (type world-state-detecting)
+                                     (object ?input-designator)))))
+    (coe:on-event (make-instance 'cram-plan-occasions-events:object-perceived-event
+                                 :object-designator desig
+                                 :perception-source :whatever))
+    desig))
 (cpm:def-process-module assembly-perception-pm (motion-designator)
   (destructuring-bind (command argument-1) (desig:reference motion-designator)
     (ecase command
@@ -167,3 +172,12 @@
      :joint-state-topic "kitchen/joint_states")))
 ;; Giskard environment ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; Visualization hook ;;
+(defmethod coe:on-event assembly-perceived ((event cpoe:object-perceived-event))
+  (unless cram-projection:*projection-environment*
+    (let* ((object-name (desig:desig-prop-value (cpoe:event-object-designator event) :name)))
+      (visualize-part object-name))))
+;; Visualization hook ;;
+;;;;;;;;;;;;;;;;;;;;;;;;

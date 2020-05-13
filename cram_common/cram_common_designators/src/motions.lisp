@@ -144,4 +144,5 @@
     (or (and (property ?object-designator (:pose ?_))
              (property ?object-designator (:type ?_))
              (property ?object-designator (:name ?_)))
-        (property ?object-designator (:type ?_)))))
+        (property ?object-designator (:type ?_))
+        (property ?object-designator (:name ?_)))))

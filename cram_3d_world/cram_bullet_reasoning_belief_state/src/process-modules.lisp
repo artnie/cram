@@ -53,7 +53,8 @@ the old object-designator description is enough to create a new one."
                (desig:desig-prop-value object-designator :type)
                (desig:desig-prop-value object-designator :name))
           (detect-new-object-pose-from-old-pose object-designator)
-          (if (desig:desig-prop-value object-designator :type)
+          (if (or (desig:desig-prop-value object-designator :type)
+                  (desig:desig-prop-value object-designator :name))
               (detect-new-object-pose-from-btr object-designator)
               (cpl:fail 'common-fail:perception-object-not-in-world
                         :object object-designator
@@ -127,7 +128,8 @@ the old object-designator description is enough to create a new one."
          ;;                                          (btr:object-visibility-percentage visibility)))
          ;;                                  obj)))
          ;;                          (btr:get-objects-for-type (desig:desig-prop-value old-object :type)))))
-         (object-name (btr:name (car (btr:get-objects-for-type (desig:desig-prop-value old-object :type))))
+         (object-name (or (desig:desig-prop-value old-object :name)
+                          (btr:name (car (btr:get-objects-for-type (desig:desig-prop-value old-object :type)))))
            ;; (if (desig:desig-prop-value old-object :name)
            ;;     (desig:desig-prop-value old-object :name)
            ;;     (btr:name (if visible-objects-in-fov
