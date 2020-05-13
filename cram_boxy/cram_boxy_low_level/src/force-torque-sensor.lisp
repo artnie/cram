@@ -43,7 +43,7 @@
   (flet ((wrench-state-sub-cb (wrench-state-msg)
            (setf (cpl:value *wrench-state-fluent*) wrench-state-msg)))
     (setf *wrench-state-sub*
-          (roslisp:subscribe "left_arm_kms40/wrench_zeroed"
+          (roslisp:subscribe "left_arm_kms40/wrench" ;; "left_arm_kms40/wrench_zeroed"
                              "geometry_msgs/WrenchStamped"
                              #'wrench-state-sub-cb))))
 
@@ -55,11 +55,13 @@
 
 (defun zero-wrench-sensor ()
   (loop for i from 1 to *wrench-zeroing-service-retries*
-        until (roslisp:wait-for-service "ft_cleaner/update_offset" 5.0)
+        until (roslisp:wait-for-service "left_arm_kms40/set_tare" 5.0)
         do (roslisp:ros-info (force-torque-sensor zero-sensor) "Waiting for zeroing service...")
         finally (if (> i *wrench-zeroing-service-retries*)
                     (progn
                       (roslisp:ros-warn (force-torque-sensor zero-sensor)
                                         "Service unreachable. Stop using force-torque sensor.")
                       (setf *wrench-zeroing-service-retries* 0))
-                    (roslisp:call-service "ft_cleaner/update_offset" 'std_srvs-srv:trigger))))
+                    (roslisp:call-service "left_arm_kms40/set_tare"
+                                          "std_srvs/SetBool" 
+                                          (roslisp:make-request 'std_srvs-srv:setbool :data T)))))
