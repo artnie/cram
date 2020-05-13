@@ -1,19 +1,19 @@
 (in-package :demo)
 
 (defparameter *phases*
-  `((chassis holder-plane-horizontal :horizontal-attachment)
-    (bottom-wing chassis :wing-attachment)
-    (underbody bottom-wing :body-attachment)
+  `((:chassis :holder-plane-horizontal :horizontal-attachment)
+    (:bottom-wing :chassis :wing-attachment)
+    (:underbody :bottom-wing :body-attachment)
     ;; underbody -> rear-wing
-    (upper-body underbody :body-on-body)
-    (bolt-1 upper-body :rear-thread)
-    (top-wing upper-body :wing-attachment)
-    (bolt-2 top-wing :middle-thread)
-    (window top-wing :window-attachment)
-    (bolt-3 window :window-thread)
-    (top-wing holder-plane-vertical :vertical-attachment)
-    (propeller motor-grill :propeller-attachment)
-    (bolt-4 propeller :propeller-thread)))
+    (:upper-body :underbody :body-on-body)
+    (:bolt-1 :upper-body :rear-thread)
+    (:top-wing :upper-body :wing-attachment)
+    (:bolt-2 :top-wing :middle-thread)
+    (:window :top-wing :window-attachment)
+    (:bolt-3 :window :window-thread)
+    (:top-wing :holder-plane-vertical :vertical-attachment)
+    (:propeller :motor-grill :propeller-attachment)
+    (:bolt-4 :propeller :propeller-thread)))
 
 (defun end-phase (phase &key (only nil) (reset nil))
   (declare (type number phase))
@@ -49,14 +49,24 @@
         (cram-occasions-events:on-event
          (make-instance 'cpoe:object-detached-robot
                         :arm :left
-                        :object-name 'chassis)))
-      (btr-utils:spawn-object 'chassis :chassis :pose btr-pose)
+                        :object-name :chassis)))
+      
+      (btr:detach-all-objects (btr:object btr:*current-bullet-world* :chassis))
+      (setf (btr:pose (btr:object btr:*current-bullet-world* :chassis))
+            pose-in-map)
+      (exe:perform
+       (desig:an action
+                (type detecting)
+                (object (desig:an object (name :chassis)))))
+      (sleep 1)
       (cram-occasions-events:on-event
        (make-instance 'cpoe:object-attached-robot
+                      :grasp :top
                       :arm :left
-                      :object-name 'chassis))
-      (exe:perform
-       (desig:a motion
-                (type world-state-detecting)
-                (object (desig:an object (type :chassis))))))))
+                      :object-name :chassis))
+      ;; (exe:perform
+      ;;  (desig:an action
+      ;;           (type detecting)
+      ;;           (object (desig:an object (name :chassis)))))
+      )))
 
