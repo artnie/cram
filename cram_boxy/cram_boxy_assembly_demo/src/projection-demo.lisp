@@ -82,11 +82,24 @@
   ;;(setf cram-robosherlock::*no-robosherlock-mode* t)
   ;; (spawn-objects-on-plate)
   (reset)
-  (initialize-attachments)
   (exec until-phase))
 
 (defun initialize-attachments ()
-  (btr:attach-object 'motor-grill 'underbody))
+  (btr:attach-object :motor-grill :underbody)
+  (loop for holder in '(:holder-bolt :holder-upper-body :holder-bottom-wing :holder-underbody
+                        :holder-plane-horizontal :holder-window :holder-plane-vertical :holder-top-wing)
+        do (btr:attach-object :big-wooden-plate holder))
+  (btr:attach-object :big-wooden-plate :chassis :loose t)
+  (btr:attach-object :holder-bottom-wing :bottom-wing)
+  (btr:attach-object :holder-underbody :underbody)
+  (btr:attach-object :holder-upper-body :upper-body)
+  (btr:attach-object :holder-top-wing :top-wing)
+  (btr:attach-object :holder-plane-horizontal :rear-wing))
+
+(defun home ()
+  (with-giskard-controlled-robot
+    (home-torso)
+    (home-arms)))
 
 (defun home-arms ()
   (exe:perform
@@ -147,7 +160,8 @@
           (go-perceive ?object-type ?nav-goal)))
     (home-torso)
     (home-arms)
-    
+
+    (btr:detach-all-objects (btr:object btr:*current-bullet-world* (desig:desig-prop-value ?object :name)))
     ;; pick object
     (exe:perform
      (desig:an action
@@ -175,16 +189,41 @@
             (go-perceive ?other-object-type ?other-nav-goal)))
       (exe:perform
        (desig:an action
-                 (type placing)
+                 (type assembling)
                  (arm left)
                  (object ?object)
-                 ;; this location designator is resolved in
-                 ;; cram_boxy_plans/src/action-designators.lisp
                  (target (desig:a location
                                   (on ?other-object)
                                   (for ?object)
-                                  (attachment ?attachment-type)))))
-    (values ?object ?other-object))))
+                                  (attachment ?attachment-type))))
+       ;; (desig:an action
+       ;;           (type placing)
+       ;;           (arm left)
+       ;;           (object ?object)
+       ;;           ;; this location designator is resolved in
+       ;;           ;; cram_boxy_plans/src/action-designators.lisp
+       ;;           (target (desig:a location
+       ;;                            (on ?other-object)
+       ;;                            (for ?object)
+       ;;                            (attachment ?attachment-type))))
+       )
+      (values ?object ?other-object))))
+
+(defun palpate-board ()
+  (let ((?object (exe:perform
+                  (desig:an action
+                            (type detecting)
+                            (object (desig:an object (name :big-wooden-plate)))))))
+    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :front)
+      (touch :object ?object
+             :arm :left
+             :pose pose
+             :direction dir))
+    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :left)
+      (touch :object ?object
+             :arm :left
+             :pose pose
+             :direction dir))))
 
 #+examples
 (

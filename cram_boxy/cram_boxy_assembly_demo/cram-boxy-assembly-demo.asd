@@ -71,7 +71,7 @@
                cram-process-modules
                
                cram-boxy-plans   ; for (a location (on ?obj) (attachment ?att) ...)
-
+               cram-boxy-low-level
                cram-boxy-description
                cram-giskard
                ;; cram-boxy-process-modules
@@ -85,6 +85,8 @@
      (:file "parameters" :depends-on ("package"))
      (:file "setup" :depends-on ("package" "parameters"))
      (:file "utils" :depends-on ("package" "parameters"))
+     (:file "assembly-plans" :depends-on ("package"))
+     (:file "assembly-designators" :depends-on ("package"))
      (:file "projection-demo" :depends-on ("package" "utils" "parameters"))
      ;; (:file "demo" :depends-on ("package" "projection-demo"))
      (:file "phase-mock" :depends-on ("package" "utils" "parameters"))))))
