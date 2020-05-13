@@ -15,13 +15,32 @@
    (giskard::call-giskard-environment-service
     :remove :name (roslisp-utilities:rosify-underscores-lisp-name name))))
 
-(defun reset ()
+(defun reset (&optional noise)
   ;; (coe:clear-belief)
   (mapcar (alexandria:compose #'remove-obj-from-giskard #'first) *object-spawning-data*)
   (giskard::make-giskard-action-client)
   (add-kitchen-to-giskard)
   (spawn-objects-on-plate)
-  (initialize-attachments))
+  (initialize-attachments)
+  (when noise (add-noise)))
+
+(defun add-noise (&optional (noise 0.1))
+  (let ((plate-pose (btr:object-pose :big-wooden-plate))
+        (noise-transform (cl-tf:make-transform
+                          (cl-tf:make-3d-vector (- (* 2 (random noise)) noise) (- (* 2 (random noise)) noise) 0)
+                          (cl-tf:make-identity-rotation))))
+    (setf (btr:pose (btr:object btr:*current-bullet-world* :big-wooden-plate))
+          (cl-tf:transform noise-transform plate-pose))
+    (with-giskard-controlled-robot
+      (review-all-objects))))
+
+(defun review-all-objects ()
+  (loop for ?object-name in (mapcar #'car *object-spawning-data*)
+            do (exe:perform
+                (desig:an action 
+                          (type detecting)
+                          (object (desig:an object (name ?object-name)))))))
+  
 
 (defun window ()
   (prolog `(and (btr:bullet-world ?w)
