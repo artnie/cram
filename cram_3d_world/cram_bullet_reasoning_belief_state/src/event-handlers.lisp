@@ -188,10 +188,10 @@ If there is no other method with 1 as qualifier, this method will be executed al
   (unless cram-projection:*projection-environment*
     (publish-environment-joint-state (btr:joint-states (cpoe:environment-event-object event)))))
 
-
+(defparameter *in-simulation* t)
 
 (defmethod cram-occasions-events:on-event object-perceived 2 ((event cpoe:object-perceived-event))
-  (if cram-projection:*projection-environment*
+  (if (or cram-projection:*projection-environment* *in-simulation*)
       ;; if in projection, only add the object name to perceived designators list
       (let ((object-data (desig:reference (cpoe:event-object-designator event))))
         (or
