@@ -276,7 +276,10 @@
 
 (man-int:def-object-type-in-other-object-transform :bolt :upper-body :rear-thread
   :attachment-translation `(-0.0525 0.0 0.007)
-  :attachment-rot-matrix man-int:*rotation-around-z-180-matrix*)
+  :attachment-rot-matrix
+  man-int::*rotation-around-z+30-matrix*
+  ;; man-int:*rotation-around-z-180-matrix*
+  )
 
 (man-int:def-object-type-in-other-object-transform :bolt :upper-body :rear-thread-screwed
   :attachment-translation `(-0.0525 0.0 -0.025)

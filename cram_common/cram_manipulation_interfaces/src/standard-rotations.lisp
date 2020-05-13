@@ -44,6 +44,21 @@
     ( 0 -1  0)
     ( 0  0  1)))
 
+(defparameter *rotation-around-z+45-matrix*
+  '((0.707107  -0.707107  0)
+    (0.707107 0.707107  0)
+    ( 0  0  1)))
+
+(defparameter *rotation-around-z+30-matrix*
+  '((0.86602  -0.5  0)
+    (0.5 0.86602  0)
+    ( 0  0  1)))
+
+(defparameter *rotation-around-z-30-matrix*
+  '((0.86602  0.5  0)
+    (-0.5 0.86602  0)
+    ( 0  0  1)))
+
 (defparameter *rotation-around-z-180-and-x+90-matrix*
   '((0  0  1)
     (1  0  0)
