@@ -48,6 +48,12 @@
                               (make-identity-rotation))
      :target-frame *fixed-frame*)))
 
+(defun vector->list (3d-vector)
+  (let ((x (cl-transforms:x 3d-vector))
+        (y (cl-transforms:y 3d-vector))
+        (z (cl-transforms:z 3d-vector)))
+    (list x y z)))
+
 (defun pose->flat-list (pose)
   (let* ((xyz (cl-transforms:origin pose))
          (qqqw (cl-transforms:orientation pose))

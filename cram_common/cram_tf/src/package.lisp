@@ -43,6 +43,7 @@
    ;; utilities
    #:poses-equal-p
    #:frame-to-pose-in-fixed-frame
+   #:vector->list
    #:pose->flat-list #:pose->flat-list-w-first
    #:pose->list
    #:flat-list->pose #:flat-list->transform #:flat-list-w-first->pose
