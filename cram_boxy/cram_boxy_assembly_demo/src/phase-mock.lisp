@@ -70,3 +70,37 @@
       ;;           (object (desig:an object (name :chassis)))))
       )))
 
+(defun bw-in-hand ()
+  (let* ((pose-in-map
+           (cram-tf:ensure-pose-in-frame
+            (cl-tf:pose->pose-stamped
+             "left_arm_7_link" 0.0
+             (btr:ensure-pose `((0.0d0 -0.03d0 0.38d0)
+                                ( 0.0d0 -0.7071067811865475d0 0.0d0 0.7071067811865475d0))))
+            "map"))
+         (btr-pose (pose*->btr-pose pose-in-map)))
+    (with-giskard-controlled-robot
+      (when (btr:attached-objects (btr:get-robot-object))
+        (cram-occasions-events:on-event
+         (make-instance 'cpoe:object-detached-robot
+                        :arm :left
+                        :object-name :chassis)))
+      
+      (btr:detach-all-objects (btr:object btr:*current-bullet-world* :bottom-wing))
+      (setf (btr:pose (btr:object btr:*current-bullet-world* :bottom-wing))
+            pose-in-map)
+      (exe:perform
+       (desig:an action
+                (type detecting)
+                (object (desig:an object (name :bottom-wing)))))
+      (sleep 1)
+      (cram-occasions-events:on-event
+       (make-instance 'cpoe:object-attached-robot
+                      :grasp :right-side
+                      :arm :left
+                      :object-name :bottom-wing))
+      ;; (exe:perform
+      ;;  (desig:an action
+      ;;           (type detecting)
+      ;;           (object (desig:an object (name :chassis)))))
+      )))
