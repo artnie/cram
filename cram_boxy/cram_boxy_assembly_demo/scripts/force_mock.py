@@ -13,8 +13,8 @@ manual = """
 Reading from the keyboard and publishing to left_arm_kms40/wrench!
 Apply force via numpad and wrench via x, y and z. Clear all forces with '5'.
 Force:
-       +x    9
-        8   /+z
+       +x    
+        8   / 9 +z
         ^  /
 +y      | /    -y
 4 <-----5-----> 6
@@ -24,8 +24,11 @@ Force:
  -z 1   2 -x
 Wrench:
 +x = x
+-x = X
 +y = y
+-y = Y
 +z = z
+-z = Z
 Cancel with ESC
 """
 
@@ -37,9 +40,188 @@ key_bindings = {
     '6': ( 0,-1, 0, 0, 0, 0),
     '1': ( 0, 0,-1, 0, 0, 0),
     'x': ( 0, 0, 0, 1, 0, 0),
+    'X': ( 0, 0, 0,-1, 0, 0),
     'y': ( 0, 0, 0, 0, 1, 0),
+    'Y': ( 0, 0, 0, 0,-1, 0),
     'z': ( 0, 0, 0, 0, 0, 1),
+    'Z': ( 0, 0, 0, 0, 0,-1),
     '5': ( 0, 0, 0, 0, 0, 0)}
+
+output_key_bindings = {
+    '8': """Force:
+       +x    
+        8     9 +z
+        ^  
++y      |      -y
+4 <     5     > 6
+        
+      
+        V 
+ -z 1   2 -x
+Wrench:
+-
+Cancel with ESC""",
+    '4': """Force:
+       +x    
+        8     9 +z
+        ^  
++y             -y
+4 <-----5     > 6
+        
+      
+        V 
+ -z 1   2 -x
+Wrench:
+-
+Cancel with ESC""",
+    '9': """Force:
+       +x    
+        8   / 9 +z
+        ^  / 
++y        /    -y
+4 <     5     > 6
+        
+      
+        V 
+ -z 1   2 -x
+Wrench:
+-
+Cancel with ESC""",
+    '2': """Force:
+       +x    
+        8     9 +z
+        ^   
++y             -y
+4 <     5      > 6
+        |
+        |
+        V 
+ -z 1   2 -x
+Wrench:
+-
+Cancel with ESC""",
+    '6': """Force:
+       +x    
+        8     9 +z
+        ^   
++y             -y
+4 <     5-----> 6
+         
+         
+        V 
+ -z 1   2 -x
+Wrench:
+-
+Cancel with ESC""",
+    '1': """Force:
+       +x    
+        8     9 +z
+        ^   
++y             -y
+4 <     5     > 6
+       /
+      / 
+     /  V 
+ -z 1   2 -x
+Wrench:
+-
+Cancel with ESC""",
+    'x': """Force:
+       +x    
+        8     9 +z
+        ^   
++y      |      -y
+4 <     5     > 6
+        |
+        
+        V 
+ -z 1   2 -x
+Wrench:
++x rot
+Cancel with ESC""",
+    'X': """Force:
+       +x    
+        8     9 +z
+        ^   
++y      |      -y
+4 <     5     > 6
+        |
+        
+        V 
+ -z 1   2 -x
+Wrench:
+-x rot
+Cancel with ESC""",
+    'y': """Force:
+       +x    
+        8     9 +z
+        ^   
++y             -y
+4 <   --5--   > 6
+        
+        
+        V 
+ -z 1   2 -x
+Wrench:
++y rot
+Cancel with ESC""",
+    'Y': """Force:
+       +x    
+        8     9 +z
+        ^   
++y             -y
+4 <   --5--   > 6
+        
+        
+        V 
+ -z 1   2 -x
+Wrench:
+-y rot
+Cancel with ESC""",
+    'z': """Force:
+       +x    
+        8     9 +z
+        ^  / 
++y        /    -y
+4 <     5     > 6
+       /
+      / 
+        V 
+ -z 1   2 -x
+Wrench:
++z rot
+Cancel with ESC""",
+    'Z': """Force:
+       +x    
+        8     9 +z
+        ^  / 
++y        /    -y
+4 <     5     > 6
+       /
+      / 
+        V 
+ -z 1   2 -x
+Wrench:
+-z rot
+Cancel with ESC""",
+    '5': """Force:
+       +x    
+        8   / 9 +z
+        ^  /
++y      | /    -y
+4 <-----5-----> 6
+       /|
+      / |
+     /  V 
+ -z 1   2 -x
+Wrench:
++x = x
+-x = X
++y = y
+-y = Y
++z = z
+-z = Z
+Cancel with ESC"""}
 
 
 def is_data():
@@ -67,6 +249,8 @@ try:
                 msg.wrench.force = Vector3(key_bindings[key][0], key_bindings[key][1], key_bindings[key][2])
                 msg.wrench.torque = Vector3(key_bindings[key][3], key_bindings[key][4], key_bindings[key][5])
                 # outprint direction of force
+                print(output_key_bindings[key])
+
 
         pub.publish(msg)
         time.sleep(.1)
