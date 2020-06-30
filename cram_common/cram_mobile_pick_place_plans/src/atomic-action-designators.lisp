@@ -137,7 +137,7 @@
     (desig:designator :action ((:type :putting)
                                (:left-poses ?left-poses)
                                (:right-poses ?right-poses)
-                               (:collision-mode :allow-attached
+                               (:collision-mode :allow-all ;;allow-attached
                                                 )
                                (:collision-object-b ?other-object-name)
                                (:collision-object-b-link ?object-link)
