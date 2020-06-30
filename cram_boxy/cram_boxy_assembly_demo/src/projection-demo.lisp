@@ -106,7 +106,8 @@
    (desig:an action
              (type positioning-arm)
              (left-configuration park)
-             (right-configuration park))))
+             ;; (right-configuration park)
+             )))
 
 (defun home-torso ()
   (exe:perform
@@ -157,7 +158,9 @@
 (defun go-pick (?object-type ?nav-goal)
   ;; go and perceive object
   (let ((?object
-          (go-perceive ?object-type ?nav-goal)))
+          (go-perceive ?object-type ?nav-goal))
+        (?constraints '(;; "odom_x_joint" "odom_y_joint" "odom_z_joint"
+                        )))
     (home-torso)
     (home-arms)
 
@@ -167,7 +170,8 @@
      (desig:an action
                (type picking-up)
                (arm left)
-               (object ?object)))
+               (object ?object)
+               (constraints ?constraints)))
     ?object))
 
 (defun go-pick-place (?object-type ?nav-goal)
@@ -214,6 +218,11 @@
                   (desig:an action
                             (type detecting)
                             (object (desig:an object (name :big-wooden-plate)))))))
+    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :top :offset '(-0.3 0 0))
+      (touch :object ?object
+             :arm :left
+             :pose pose
+             :direction dir))
     (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :front)
       (touch :object ?object
              :arm :left
