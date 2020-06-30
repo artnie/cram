@@ -27,7 +27,9 @@
   </node>
 
   <!-- floor map for localization -->
-  <node name="map_server" pkg="map_server" type="map_server"
-        args="$(find iai_maps)/maps/map-2017-11-02.yaml" />
+  <include file="$(find iai_maps)/launch/map_boxy.launch" />
+
+  <!-- room walls -->
+  <include file="$(find iai_maps)/launch/room.launch" />
 
 </launch>

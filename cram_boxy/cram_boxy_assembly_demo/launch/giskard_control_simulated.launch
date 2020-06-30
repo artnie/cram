@@ -1,33 +1,12 @@
 <launch>
 
-  <!-- boxy description -->
-  <include file="$(find iai_boxy_description)/launch/upload_boxy.launch" />
-
-  <!-- simulated boxy-kinematics -->
-  <rosparam command="load" file="$(find iai_boxy_sim)/config/ros_control_sim.yaml" />
-
-  <!-- giskard-related joint remapping to whole-body-controller-->
-  <remap from="/joint_trajectory_controller" to="/whole_body_controller" />
-
-  <!-- joint-control -->
-  <node pkg="ros_control_boilerplate" type="sim_hw_main" name="simulator" 
-        output="screen"/>
-  <node pkg="controller_manager" type="spawner" name="spawner" output="screen"
-        args="joint_state_controller joint_trajectory_controller --shutdown-timeout 0.5" />
-
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" />
+  <!-- simulation -->
+  <include file="$(find iai_boxy_sim)/launch/ros_control_sim.launch" />
 
   <!-- kitchen environment -->
   <include file="$(find cram_boxy_assembly_demo)/launch/kitchen.launch" />
 
   <!-- lookup static transforms via tf2 -->
   <node pkg="tf2_ros" type="buffer_server" name="tf2_buffer_server" />
-
-  <!-- fake odom localization -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="fake_localization"
-        output="screen" args="-2.5 1.5 0 0 0 0 map odom" />
-
-  <!-- giskard whole-body-controller -->
-  <!-- include file="$(find giskardpy)/launch/giskardpy_boxy_sim.launch" /-->
  
 </launch>
