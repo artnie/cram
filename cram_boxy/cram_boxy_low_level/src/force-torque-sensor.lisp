@@ -38,14 +38,34 @@
 (defvar *wrench-state-fluent* (cpl:make-fluent :name :wrench-state)
   "ROS message containing robot's left gripper state ROS message.")
 
+(defvar *wrench-state-filtered-sub* nil
+  "Filtered subscriber.")
+
+(defvar *wrench-state-filtered-fluent* (cpl:make-fluent :name :wrench-state)
+  "Filtered fluent.")
+
+(defun reset-wrench-state ()
+  (setf *wrench-zeroing-service-retries* 3)
+  (setf *wrench-state-sub* nil)
+  (setf *wrench-state-filtered-sub* nil)
+  (setf *wrench-state-fluent* (cpl:make-fluent :name :wrench-state))
+  (setf *wrench-state-filtered-sub* (cpl:make-fluent :name :wrench-state-filtered))
+  (init-wrench-state-sub))
+
 (defun init-wrench-state-sub ()
   "Initializes *wrench-state-sub*"
   (flet ((wrench-state-sub-cb (wrench-state-msg)
-           (setf (cpl:value *wrench-state-fluent*) wrench-state-msg)))
+           (setf (cpl:value *wrench-state-fluent*) wrench-state-msg))
+         (wrench-state-filtered-sub-cb (wrench-state-msg)
+           (setf (cpl:value *wrench-state-filtered-fluent*) wrench-state-msg)))
     (setf *wrench-state-sub*
-          (roslisp:subscribe "left_arm_kms40/wrench" ;; "left_arm_kms40/wrench_zeroed"
+          (roslisp:subscribe "left_arm_kms40/wrench"
                              "geometry_msgs/WrenchStamped"
-                             #'wrench-state-sub-cb))))
+                             #'wrench-state-sub-cb))
+    (setf *wrench-state-filtered-sub*
+          (roslisp:subscribe "left_arm_kms40/wrench_filtered"
+                             "geometry_msgs/WrenchStamped"
+                             #'wrench-state-filtered-sub-cb))))
 
 (defun destroy-wrench-state-sub ()
   (setf *wrench-state-sub* nil))
