@@ -28,7 +28,7 @@
 
 (in-package :boxy-ll)
 
-(defparameter *gripper-minimal-position* 0.007 "in meters")
+(defparameter *gripper-minimal-position* 0.0071 "in meters")
 (defparameter *gripper-maximal-position* 0.108 "in meters")
 
 (defparameter *gripper-action-timeout* 3.0 "in seconds")
