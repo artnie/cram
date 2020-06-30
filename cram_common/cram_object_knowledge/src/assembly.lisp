@@ -79,13 +79,13 @@
   :grasp-translation `(0.0 0.0 ,*chassis-grasp-z-offset*)
   :grasp-rot-matrix man-int:*z-across-x-grasp-rotation*
   :pregrasp-offsets `(0.0 0.0 0.1) ;; *default-lift-offsets*
-  :2nd-pregrasp-offsets `(0.0 0.0 0.01) ;; *default-lift-offsets*
+  :2nd-pregrasp-offsets `(0.0 0.0 0.0) ;; *default-lift-offsets*
   :lift-offsets *default-small-lift-offsets*
   :2nd-lift-offsets *default-lift-offsets*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; BOTTOM-WING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defparameter *bottom-wing-grasp-x-offset* 0.07)
+(defparameter *bottom-wing-grasp-x-offset* 0.1)
 (defparameter *bottom-wing-grasp-y-offset* 0.01)
 (defparameter *bottom-wing-grasp-z-offset* 0.0)
 
