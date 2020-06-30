@@ -28,9 +28,9 @@
 ;;; POSSIBILITY OF SUCH DAMAGE.
 (in-package :demo)
 
-(defparameter *plate-x* -1.1115)
-(defparameter *plate-y* 1.6)
-(defparameter *plate-z* 0.8626)
+(defparameter *plate-x* -1.132d0) ;; -1.1115)
+(defparameter *plate-y* 1.44d0) ;; 1.6)
+(defparameter *plate-z* 0.884d0);; 0.8626)
 
 (defparameter *plate-rad-x* 0.36)
 (defparameter *plate-rad-y* 0.60)
@@ -50,8 +50,8 @@
 (defparameter *holder-underbody-rad-x* 0.0925)
 (defparameter *holder-underbody-rad-y* 0.025)
 (defparameter *holder-underbody-rad-z* 0.024)
-(defparameter *holder-plane-horizontal-rad-x* 0.1015)
-(defparameter *holder-plane-horizontal-rad-y* 0.06)
+(defparameter *holder-plane-horizontal-rad-x* 0.237)
+(defparameter *holder-plane-horizontal-rad-y* 1.11)
 (defparameter *holder-plane-horizontal-rad-z* 0.1202)
 (defparameter *holder-window-rad-x* 0.026)
 (defparameter *holder-window-rad-y* 0.025)
@@ -74,6 +74,7 @@
 (defparameter *transparent-plane* '(1 1 1))
 (defparameter *black-plane* '(0.184 0.152 0.121))
 (defparameter *gray-plane* '(0.482 0.537 0.549))
+(defparameter *wood-plane* '(0.823 0.698 0.513))
 
 (defparameter *base-x* -2.4)
 (defparameter *base-very-left-side-left-hand-pose* `((,*base-x* 1.8 0) (0 0 0 1)))
@@ -82,30 +83,29 @@
 (defparameter *base-middle-side-left-hand-pose* `((,*base-x* 1.1 0) (0 0 0 1)))
 ;; (defparameter *base-right-side-left-hand-pose* `((,*base-x* 0.9 0) (0 0 0 1)))
 (defparameter *base-right-side-left-hand-pose* `((,*base-x* 0.7 0) (0 0 0 1)))
-(defparameter *base-very-right-side-left-hand-pose* `((,(- *base-x* 0.2) 0.65 0) (0 0 0 1)))
+(defparameter *base-very-right-side-left-hand-pose* `((,(- *base-x* 0.7) 0.35 0) (0 0 0 1)))
 (defparameter *base-touch-pose* `((,(- *base-x* 0.2) 1.5 0) (0 0 0 1)))
 
 
 (defparameter *object-spawning-data*
-  `((:big-wooden-plate :big-wooden-plate (0.823 0.698 0.513)
+  `((:big-wooden-plate :big-wooden-plate ,*wood-plane*
                       ((,*plate-rad-x* ,*plate-rad-y* ,(- *plate-rad-z*)) (0 0 0 1)))
     ;; (:holder-bolt :holder-bolt ,*yellow-plastic*
     ;;              ((,*holder-bolt-rad-x* ,*holder-bolt-rad-y* ,*holder-bolt-rad-z*) (0 0 0 1)))
     ;; (:holder-upper-body :holder-upper-body ,*yellow-plastic*
     ;;                    ((,(+ 0.05 *holder-upperbody-rad-x*) 0.10 ,*holder-upperbody-rad-z*)
     ;;                     (0 0 0 1)))
-    ;; (:holder-bottom-wing :holder-bottom-wing ,*gray-plastic*
-    ;;                     ((,(+ 0.1 *holder-bottom-wing-rad-x*)
-    ;;                       ,(- 0.3 *holder-bottom-wing-rad-y*)
-    ;;                       ,*holder-bottom-wing-rad-z*)
-    ;;                      ,man-int:*rotation-around-z-90-list*))
+    (:holder-bottom-wing :holder-bottom-wing ,*gray-plastic*
+                        ((,(+ 0.1 *holder-bottom-wing-rad-x*)
+                          ,(- 0.3 *holder-bottom-wing-rad-y*)
+                          ,*holder-bottom-wing-rad-z*)
+                         ,man-int:*rotation-around-z-90-list*))
     ;; (:holder-underbody :holder-underbody ,*yellow-plastic*
     ;;                   ((,(+ 0.05 *holder-underbody-rad-x*) 0.4 ,*holder-underbody-rad-z*)
     ;;                    (0 0 0 1)))
     (:holder-plane-horizontal :holder-plane-horizontal ,*yellow-plastic*
-                             ((,(+ 0.05 *holder-plane-horizontal-rad-x*)
-                               ;; ,(- 0.0 *holder-plane-horizontal-rad-y*)
-                               ,(- 1.2 *holder-plane-horizontal-rad-y*)
+                             ((,*holder-plane-horizontal-rad-x*
+                               ,*holder-plane-horizontal-rad-y*
                                ,*holder-plane-horizontal-rad-z*)
                               (0 0 0 1)))
     ;; (:holder-window :holder-window ,*gray-plastic*
@@ -126,9 +126,9 @@
     ;;                   ,man-int:*rotation-around-z-90-list*))
 
     ;; ;; rear wing is already well positioned
-    ;; (:rear-wing :rear-wing ,*yellow-plane*
-    ;;            ((0.079 ,(+ 0.599  0.541) 0.137);; (0.079 0.599 0.056)
-    ;;             ,man-int:*rotation-around-z+90-list*))
+    (:rear-wing :rear-wing ,*yellow-plane*
+               ((0.163 ,(+ 0.569  0.541) 0.137);; (0.079 0.599 0.056)
+                ,man-int:*rotation-around-z+90-list*))
 
     ;; ;; ;; bolts are used intermediately
     ;; (:bolt-1 :bolt ,*gray-plane*
@@ -144,9 +144,9 @@
 
     ;; ;; first part of scenario on horizontal holder
     (:chassis :chassis ,*yellow-plane*
-             ((0.2 0.9 ,*chassis-rad-z*) ,man-int:*rotation-around-z-90-list*))
-    ;; (:bottom-wing :bottom-wing ,*cyan-plane*
-    ;;              ((0.134 0.25 0.093) (0 0 0 1)))
+             ((0.283 0.935 ,*chassis-rad-z*) ,man-int:*rotation-around-z-90-list*))
+    (:bottom-wing :bottom-wing ,*cyan-plane*
+                 ((0.134 0.25 0.093) (0 0 0 1)))
     ;; (:underbody :underbody ,*red-plane*
     ;;            ((0.145 0.399 0.024) (0 0 0 1)))
     ;; (:motor-grill :motor-grill ,*black-plane*
@@ -192,18 +192,18 @@
 ;;; * screw bottom body
 (defparameter *assembly-steps*
   `(
-  ;; -1
-  (palpate-board)  
   ;; 0
+  (palpate-board)  
+  ;; 1
   (go-connect :chassis *base-somewhat-left-side-left-hand-pose* ;; *base-very-left-side-left-hand-pose*
               :holder-plane-horizontal *base-left-side-left-hand-pose* ;; *base-middle-side-left-hand-pose*
               :horizontal-attachment)
-  ;; 1
+  ;; 2
   (go-connect :bottom-wing *base-very-right-side-left-hand-pose*
               :chassis *base-very-left-side-left-hand-pose* ;; *base-left-side-left-hand-pose*
               :wing-attachment)
 
-  ;; 2
+  ;; 3
   (go-connect :underbody *base-middle-side-left-hand-pose*
               :bottom-wing *base-left-side-left-hand-pose* ;; *base-middle-side-left-hand-pose*
               :body-attachment)
@@ -214,53 +214,53 @@
   ;; attached automatically.
   ;; so we have to attach them manually unfortunately.
   ;; this is required for later moving the whole plane onto another holder
-  ;; 3
+  ;; 4
   (btr:attach-object 'underbody 'rear-wing)
 
-  ;; 4
+  ;; 5
   (go-connect :upper-body *base-right-side-left-hand-pose*
               :underbody *base-left-side-left-hand-pose*
               :body-on-body)
-  ;; 5
+  ;; 6
   (go-connect :bolt *base-right-side-left-hand-pose*
               :upper-body *base-left-side-left-hand-pose*
               :rear-thread)
-  ;; 6
+  ;; 7
   (go-connect :top-wing *base-left-side-left-hand-pose*
               :upper-body *base-left-side-left-hand-pose*
               :wing-attachment)
-  ;; 7
+  ;; 8
   (go-connect :bolt *base-right-side-left-hand-pose*
               :top-wing *base-left-side-left-hand-pose*
               :middle-thread)
-  ;; 8
+  ;; 9
   (go-connect :window *base-somewhat-left-side-left-hand-pose*
               :top-wing *base-left-side-left-hand-pose*
               :window-attachment)
-  ;; 9
+  ;; 10
   (go-connect :bolt *base-right-side-left-hand-pose*
               :window *base-left-side-left-hand-pose*
               :window-thread)
 
-  ;; 10
+  ;; 11
   (go-connect :top-wing  *base-somewhat-left-side-left-hand-pose*
               :holder-plane-vertical *base-left-side-left-hand-pose*
               ;; or `((,(- *base-x* 0.00) 1.45 0) (0 0 0 1))
               :vertical-attachment)
 
-  ;; 11
+  ;; 12
   (go-connect :propeller `((,(- *base-x* 0.15) 2 0) (0 0 0 1))
               :motor-grill *base-left-side-left-hand-pose*
               ;; or `((,(- *base-x* 0.15) 1.8 0) (0 0 0 1))
               :propeller-attachment)
 
-  ;; 12
+  ;; 13
   (go-connect :bolt *base-right-side-left-hand-pose*
               :propeller *base-left-side-left-hand-pose*
               ;; or `((,*base-x* 1.85 0) (0 0 0 1))
               :propeller-thread)
 
-  ;; 13
+  ;; 14
   (exe:perform
    (desig:an action
              (type positioning-arm)
