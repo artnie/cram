@@ -15,11 +15,18 @@
     (:propeller :motor-grill :propeller-attachment)
     (:bolt-4 :propeller :propeller-thread)))
 
+(defun prepare (phase &key (only nil) (reset nil))
+  (declare (type number phase))
+  (when reset (reset))
+  
+  )
+
 (defun end-phase (phase &key (only nil) (reset nil))
   (declare (type number phase))
   (when reset (reset))
   (if (<= 0 phase (1- (length *phases*)))
       (flet ((attach (name other-name attachment)
+               (btr:detach-all-objects (btr:object btr:*current-bullet-world* name))
                (cram-occasions-events:on-event
                   (make-instance 'cpoe:object-attached-object
                                  :object-name name :other-object-name other-name
@@ -78,7 +85,8 @@
              (btr:ensure-pose `((0.0d0 -0.03d0 0.38d0)
                                 ( 0.0d0 -0.7071067811865475d0 0.0d0 0.7071067811865475d0))))
             "map"))
-         (btr-pose (pose*->btr-pose pose-in-map)))
+         ;; (btr-pose (pose*->btr-pose pose-in-map))
+         )
     (with-giskard-controlled-robot
       (when (btr:attached-objects (btr:get-robot-object))
         (cram-occasions-events:on-event
@@ -104,3 +112,95 @@
       ;;           (type detecting)
       ;;           (object (desig:an object (name :chassis)))))
       )))
+
+(defun underb-in-hand ()
+  (let* ((pose-in-map
+           (cram-tf:ensure-pose-in-frame
+            (cl-tf:pose->pose-stamped
+             "left_gripper_tool_frame" 0.0
+             (btr:ensure-pose `((0.0d0 0.01d0 0.0d0)
+                                (0.7071067811865475d0 0.7071067811865475d0 0.0d0 0.0d0))))
+            "map")))
+    (with-giskard-controlled-robot
+      (when (btr:attached-objects (btr:get-robot-object))
+        (cram-occasions-events:on-event
+         (make-instance 'cpoe:object-detached-robot
+                        :arm :left
+                        :object-name :underbody)))
+      
+      (btr:detach-all-objects (btr:object btr:*current-bullet-world* :underbody))
+      (setf (btr:pose (btr:object btr:*current-bullet-world* :underbody))
+            pose-in-map)
+      (exe:perform
+       (desig:an action
+                (type detecting)
+                (object (desig:an object (name :underbody)))))
+      (sleep 1)
+      (cram-occasions-events:on-event
+       (make-instance 'cpoe:object-attached-robot
+                      :grasp :top
+                      :arm :left
+                      :object-name :underbody))
+      ;; (exe:perform
+      ;;  (desig:an action
+      ;;           (type detecting)
+      ;;           (object (desig:an object (name :chassis)))))
+      )))
+
+(defun upperb-in-hand ()
+  (let* ((pose-in-map
+           (cram-tf:ensure-pose-in-frame
+            (cl-tf:pose->pose-stamped
+             "left_gripper_tool_frame" 0.0
+             (btr:ensure-pose `((0.0d0 -0.012d0 -0.02d0)
+                                (0.7071067811865475d0 -0.7071067811865475d0 0.0d0 0.0d0))))
+            "map")))
+    (with-giskard-controlled-robot
+      (when (btr:attached-objects (btr:get-robot-object))
+        (cram-occasions-events:on-event
+         (make-instance 'cpoe:object-detached-robot
+                        :arm :left
+                        :object-name :upper-body)))
+      
+      (btr:detach-all-objects (btr:object btr:*current-bullet-world* :upper-body))
+      (setf (btr:pose (btr:object btr:*current-bullet-world* :upper-body))
+            pose-in-map)
+      (exe:perform
+       (desig:an action
+                (type detecting)
+                (object (desig:an object (name :upper-body)))))
+      (sleep 1)
+      (cram-occasions-events:on-event
+       (make-instance 'cpoe:object-attached-robot
+                      :grasp :top
+                      :arm :left
+                      :object-name :upper-body)))))
+
+(defun bolt-in-hand ()
+  (let* ((pose-in-map
+           (cram-tf:ensure-pose-in-frame
+            (cl-tf:pose->pose-stamped
+             "left_gripper_tool_frame" 0.0
+             (btr:ensure-pose `((0.0d0 0.0d0 0.023d0)
+                                (0.7071067811865475d0 -0.7071067811865475d0 0.0d0 0.0d0))))
+            "map")))
+    (with-giskard-controlled-robot
+      (when (btr:attached-objects (btr:get-robot-object))
+        (cram-occasions-events:on-event
+         (make-instance 'cpoe:object-detached-robot
+                        :arm :left
+                        :object-name :bolt-1)))
+      
+      (btr:detach-all-objects (btr:object btr:*current-bullet-world* :bolt-1))
+      (setf (btr:pose (btr:object btr:*current-bullet-world* :bolt-1))
+            pose-in-map)
+      (exe:perform
+       (desig:an action
+                (type detecting)
+                (object (desig:an object (name :bolt-1)))))
+      (sleep 1)
+      (cram-occasions-events:on-event
+       (make-instance 'cpoe:object-attached-robot
+                      :grasp :top
+                      :arm :left
+                      :object-name :bolt-1)))))

@@ -12,7 +12,7 @@
     (roslisp:ros-info (debug-grasp) "Waiting for force to close gripper.")
     (cpl:wait-for (cpl:> (cpl:fl-funcall #'force-aggregated boxy-ll:*wrench-state-fluent*) 4.0))
     (roslisp:ros-info (debug-grasp) "Force detected, closing gripper.")
-    (boxy-ll::move-gripper-joint :action-type-or-position :grip :left-or-right :left :effort 30)))
+    (boxy-ll::move-gripper-joint :action-type-or-position :grip :left-or-right :left :effort 50)))
 
 (defun reset-tf-client ()
   ;; (cram-tf::destroy-tf)
@@ -38,10 +38,6 @@
   (initialize-attachments)
   (when noise (add-noise)))
 
-(defun reset-w-chassis ()
-  (reset)
-  (chassis-in-hand))
-
 (defun add-noise (&optional (noise 0.1))
   (let ((plate-pose (btr:object-pose :big-wooden-plate))
         (noise-transform (cl-tf:make-transform
@@ -58,6 +54,8 @@
                 (desig:an action 
                           (type detecting)
                           (object (desig:an object (name ?object-name)))))))
+
+(defun print-phases ())
   
 
 (defun window ()
