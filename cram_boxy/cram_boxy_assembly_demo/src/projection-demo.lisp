@@ -68,14 +68,19 @@
 (defmethod exe:generic-perform :before (designator)
   (format t "~%PERFORMING~%~A~%~%" designator))
 
-(defun exec (phase &key only reset)
+
+(defun exec (phase &key (only t) reset)
   (when reset (reset))
   (if (<= 0 phase (length *assembly-steps*))
-      (with-giskard-controlled-robot
-        (if only
+      (let ((assembly-step (nth phase *assembly-steps*)))
+        (roslisp:ros-info (assembly exec)
+                          "Executing phase ~a:~%Putting ~a on ~a."
+                          phase (nth 1 assembly-step) (nth 3 assembly-step))
+        (with-giskard-controlled-robot
+          (if only
             (eval (nth phase *assembly-steps*))
             (loop for step to phase
-                  do (eval (nth step *assembly-steps*)))))
+                  do (eval (nth step *assembly-steps*))))))
       (roslisp:ros-warn (assembly exec) "There is no phase ~a." phase)))
 
 (defun demo (&optional (until-phase 13))
@@ -112,12 +117,12 @@
 (defun home-torso ()
   (exe:perform
    (desig:a motion (type moving-torso)
-            (joint-angle -0.3))))
+            (joint-angle -0.2))))
 
 (defun go-perceive (?object-type ?nav-goal)
   ;; park arms
-  (home-torso)
-  (home-arms)
+  ;; (home-torso)
+  ;; (home-arms)
   
   ;; drive to right location
   (let ((?pose (cl-transforms-stamped:pose->pose-stamped
@@ -159,10 +164,13 @@
   ;; go and perceive object
   (let ((?object
           (go-perceive ?object-type ?nav-goal))
-        (?constraints '(;; "odom_x_joint" "odom_y_joint" "odom_z_joint"
+        (?constraints '(;; "odom_x_joint"
+                        ;; "odom_y_joint"
+                        ;; "odom_z_joint"
+                        ;; "triangle_base_joint" 
                         )))
-    (home-torso)
-    (home-arms)
+    ;; (home-torso)
+    ;; (home-arms)
 
     (btr:detach-all-objects (btr:object btr:*current-bullet-world* (desig:desig-prop-value ?object :name)))
     ;; pick object
