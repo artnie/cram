@@ -36,17 +36,15 @@
 
 (defparameter *standard-to-boxy-gripper-transform*
   (cl-transforms-stamped:make-identity-transform))
-
-   
  
 (defparameter *left-parking-joint-states*
-  '(("left_arm_0_joint" -1.8019747734069824d0)
-    ("left_arm_1_joint" 0.8786124587059021d0)
-    ("left_arm_2_joint" 0.7954109311103821d0)
-    ("left_arm_3_joint" -1.0891839265823364d0)
-    ("left_arm_4_joint" 0.4424283504486084d0)
-    ("left_arm_5_joint" 1.480696678161621d0)
-    ("left_arm_6_joint" -1.8207650184631348d0)))
+  '(("left_arm_0_joint" -0.34138986468315125d0)
+    ("left_arm_1_joint" -0.13722221553325653d0)
+    ("left_arm_2_joint" 0.284784734249115d0)
+    ("left_arm_3_joint" -1.5354889631271362d0)
+    ("left_arm_4_joint" 0.011948681436479092d0)
+    ("left_arm_5_joint" -0.6284394264221191d0)
+    ("left_arm_6_joint"  0.2686203718185425d0)))
 
 (defparameter *right-parking-joint-states*
   '(("right_arm_0_joint" 0.0)
