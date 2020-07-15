@@ -28,7 +28,7 @@
 ;;; POSSIBILITY OF SUCH DAMAGE.
 (in-package :demo)
 
-(defparameter *plate-x* -1.132d0) ;; -1.1115)
+(defparameter *plate-x* -1.202d0) 
 (defparameter *plate-y* 1.44d0) ;; 1.6)
 (defparameter *plate-z* 0.884d0);; 0.8626)
 
@@ -76,33 +76,33 @@
 (defparameter *gray-plane* '(0.482 0.537 0.549))
 (defparameter *wood-plane* '(0.823 0.698 0.513))
 
-(defparameter *base-x* -2.4)
-(defparameter *base-very-left-side-left-hand-pose* `((,*base-x* 1.8 0) (0 0 0 1)))
-(defparameter *base-left-side-left-hand-pose* `((,*base-x* 1.5 0) (0 0 0 1)))
-(defparameter *base-somewhat-left-side-left-hand-pose* `((,*base-x* 1.3 0) (0 0 0 1)))
-(defparameter *base-middle-side-left-hand-pose* `((,*base-x* 1.1 0) (0 0 0 1)))
+(defparameter *base-x* -2.75)
+(defparameter *base-very-left-side-left-hand-pose* `((,*base-x* 2.0 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
+(defparameter *base-left-side-left-hand-pose* `((,*base-x* 1.5 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
+(defparameter *base-somewhat-left-side-left-hand-pose* `((,*base-x* 1.3 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
+(defparameter *base-middle-side-left-hand-pose* `((,*base-x* 1.1 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
 ;; (defparameter *base-right-side-left-hand-pose* `((,*base-x* 0.9 0) (0 0 0 1)))
-(defparameter *base-right-side-left-hand-pose* `((,*base-x* 0.7 0) (0 0 0 1)))
-(defparameter *base-very-right-side-left-hand-pose* `((,(- *base-x* 0.7) 0.35 0) (0 0 0 1)))
+(defparameter *base-right-side-left-hand-pose* `((,*base-x* 0.7 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
+(defparameter *base-very-right-side-left-hand-pose* `((,*base-x* 0.35 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
 (defparameter *base-touch-pose* `((,(- *base-x* 0.2) 1.5 0) (0 0 0 1)))
 
 
 (defparameter *object-spawning-data*
   `((:big-wooden-plate :big-wooden-plate ,*wood-plane*
                       ((,*plate-rad-x* ,*plate-rad-y* ,(- *plate-rad-z*)) (0 0 0 1)))
-    ;; (:holder-bolt :holder-bolt ,*yellow-plastic*
-    ;;              ((,*holder-bolt-rad-x* ,*holder-bolt-rad-y* ,*holder-bolt-rad-z*) (0 0 0 1)))
-    ;; (:holder-upper-body :holder-upper-body ,*yellow-plastic*
-    ;;                    ((,(+ 0.05 *holder-upperbody-rad-x*) 0.10 ,*holder-upperbody-rad-z*)
-    ;;                     (0 0 0 1)))
+    (:holder-bolt :holder-bolt ,*yellow-plastic*
+                 ((,*holder-bolt-rad-x* ,*holder-bolt-rad-y* ,*holder-bolt-rad-z*) (0 0 0 1)))
+    (:holder-upper-body :holder-upper-body ,*yellow-plastic*
+                       ((,(+ 0.05 *holder-upperbody-rad-x*) 0.10 ,*holder-upperbody-rad-z*)
+                        (0 0 0 1)))
     (:holder-bottom-wing :holder-bottom-wing ,*gray-plastic*
                         ((,(+ 0.1 *holder-bottom-wing-rad-x*)
                           ,(- 0.3 *holder-bottom-wing-rad-y*)
                           ,*holder-bottom-wing-rad-z*)
                          ,man-int:*rotation-around-z-90-list*))
-    ;; (:holder-underbody :holder-underbody ,*yellow-plastic*
-    ;;                   ((,(+ 0.05 *holder-underbody-rad-x*) 0.4 ,*holder-underbody-rad-z*)
-    ;;                    (0 0 0 1)))
+    (:holder-underbody :holder-underbody ,*yellow-plastic*
+                      ((,(+ 0.05 *holder-underbody-rad-x*) 0.4 ,*holder-underbody-rad-z*)
+                       (0 0 0 1)))
     (:holder-plane-horizontal :holder-plane-horizontal ,*yellow-plastic*
                              ((,*holder-plane-horizontal-rad-x*
                                ,*holder-plane-horizontal-rad-y*
@@ -131,8 +131,8 @@
                 ,man-int:*rotation-around-z+90-list*))
 
     ;; ;; ;; bolts are used intermediately
-    ;; (:bolt-1 :bolt ,*gray-plane*
-    ;;         ((0.015 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
+    (:bolt-1 :bolt ,*gray-plane*
+            ((0.015 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
     ;; (:bolt-2 :bolt ,*gray-plane*
     ;;         ((0.0325 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
     ;; (:bolt-3 :bolt ,*gray-plane*
@@ -147,12 +147,12 @@
              ((0.283 0.935 ,*chassis-rad-z*) ,man-int:*rotation-around-z-90-list*))
     (:bottom-wing :bottom-wing ,*cyan-plane*
                  ((0.134 0.25 0.093) (0 0 0 1)))
-    ;; (:underbody :underbody ,*red-plane*
-    ;;            ((0.145 0.399 0.024) (0 0 0 1)))
+    (:underbody :underbody ,*red-plane*
+               ((0.145 0.399 0.024) (0 0 0 1)))
     ;; (:motor-grill :motor-grill ,*black-plane*
     ;;              ((0.238 0.399 0.039) ,man-int:*rotation-around-y+90-list*))
-    ;; (:upper-body :upper-body ,*red-plane*
-    ;;             ((0.119 0.1003 0.0482) (0 0 0 1)))
+    (:upper-body :upper-body ,*red-plane*
+                ((0.119 0.1003 0.0482) (0 0 0 1)))
     ;; (:top-wing :top-wing ,*cyan-plane*
     ;;           ((0.18522 ,(- 1.11423 0.55) 0.08852) (0 0 0 1)))
     ;; (:window :window ,*transparent-plane*
@@ -195,7 +195,7 @@
   ;; 0
   (palpate-board)  
   ;; 1
-  (go-connect :chassis *base-somewhat-left-side-left-hand-pose* ;; *base-very-left-side-left-hand-pose*
+  (go-connect :chassis *base-very-left-side-left-hand-pose* ;; *base-very-left-side-left-hand-pose*
               :holder-plane-horizontal *base-left-side-left-hand-pose* ;; *base-middle-side-left-hand-pose*
               :horizontal-attachment)
   ;; 2
@@ -204,8 +204,8 @@
               :wing-attachment)
 
   ;; 3
-  (go-connect :underbody *base-middle-side-left-hand-pose*
-              :bottom-wing *base-left-side-left-hand-pose* ;; *base-middle-side-left-hand-pose*
+  (go-connect :underbody *base-somewhat-left-side-left-hand-pose*
+              :bottom-wing *base-very-left-side-left-hand-pose* ;; *base-middle-side-left-hand-pose*
               :body-attachment)
 
   ;; we put the underbody on the bottom-wing but by doing that
@@ -219,11 +219,11 @@
 
   ;; 5
   (go-connect :upper-body *base-right-side-left-hand-pose*
-              :underbody *base-left-side-left-hand-pose*
+              :underbody *base-very-left-side-left-hand-pose*
               :body-on-body)
   ;; 6
   (go-connect :bolt *base-right-side-left-hand-pose*
-              :upper-body *base-left-side-left-hand-pose*
+              :upper-body *base-very-left-side-left-hand-pose*
               :rear-thread)
   ;; 7
   (go-connect :top-wing *base-left-side-left-hand-pose*
