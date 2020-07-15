@@ -5,8 +5,5 @@
 
   <!-- kitchen environment -->
   <include file="$(find cram_boxy_assembly_demo)/launch/kitchen.launch" />
-
-  <!-- lookup static transforms via tf2 -->
-  <node pkg="tf2_ros" type="buffer_server" name="tf2_buffer_server" />
  
 </launch>
