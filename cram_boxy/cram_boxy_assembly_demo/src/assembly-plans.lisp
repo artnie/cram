@@ -366,7 +366,7 @@ for one value. The vector will be normalized to length 1."
                  (boxy-ll::zero-wrench-sensor)
                  ;; expand put-poses with multiple wiggles
                ))
-             (cpl:retry))))
+             (cpl:retry)))
       (break "[assembly] Putting object & force detect in parallel.")
       (cpl:pursue
         (and (cpl:wait-for (cpl:> (cpl:fl-funcall #'force-aggregated boxy-ll:*wrench-state-fluent*) 1.5))
@@ -381,7 +381,7 @@ for one value. The vector will be normalized to length 1."
                      (supporting-object ?other-object-designator))
                    (left-poses ?left-put-poses)
                    (right-poses ?right-put-poses)
-                   (constraints ?constraints)))))
+                   (constraints ?constraints))))))
   (setf giskard::*max-velocity* 0.1)
   (roslisp:set-param "joint_impedance" "regular")
   (roslisp:set-param "max_joint_velocity" "regular")
