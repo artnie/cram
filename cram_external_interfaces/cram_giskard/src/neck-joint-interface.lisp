@@ -88,9 +88,9 @@
   
   (when goal-configuration
     (let ((configuration (second (get-neck-joint-names-and-positions-list))))
-      (unless (cram-tf:values-converged (joints:normalize-joint-angles
+      (unless (cram-tf:values-converged (cram-tf:normalize-joint-angles
                                          configuration)
-                                        (joints:normalize-joint-angles
+                                        (cram-tf:normalize-joint-angles
                                          (mapcar #'second goal-configuration))
                                         convergence-delta-joint)
         (cpl:fail 'common-fail:manipulation-goal-not-reached
@@ -98,9 +98,9 @@
                                                    ~a (~a)~%should have been at~%~a~%~
                                                    with delta-joint of ~a."
                                        "neck"
-                                       (joints:normalize-joint-angles
+                                       (cram-tf:normalize-joint-angles
                                         configuration)
-                                       (joints:normalize-joint-angles
+                                       (cram-tf:normalize-joint-angles
                                         (mapcar #'second goal-configuration))
                                        convergence-delta-joint))))))
 

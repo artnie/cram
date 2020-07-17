@@ -30,8 +30,10 @@
 (in-package :cram-robot-interfaces)
 
 (def-fact-group arms (;; rules describing the robot arms
-                      arm required-arms available-arms
-                      arm-joints arm-links arm-base-joints arm-base-links arm-tool-joints
+                      arm
+                      required-arms available-arms
+                      arm-joints arm-links arm-base-joints arm-base-links
+                      arm-tool-joints
                       hand-links end-effector-link robot-tool-frame
                       gripper-joint gripper-link gripper-meter-to-joint-multiplier
                       gripper-finger-link
@@ -66,11 +68,13 @@
   (<- (arm-links ?robot ?arm ?links)
     (fail))
 
-  ;; Unifies ?arm with the list of base joints for that arm (e.g., for the PR2 it's the torso).
+  ;; Unifies ?arm with the list of base joints for that arm
+  ;; (e.g., for the PR2 it's the torso).
   (<- (arm-base-joints ?robot ?arm ?joints)
     (fail))
 
-  ;; Unifies ?arm with a list of base links for that arm (e.g., for the PR2 it's the torso).
+  ;; Unifies ?arm with a list of base links for that arm
+  ;; (e.g., for the PR2 it's the torso).
   (<- (arm-base-links ?robot ?arm ?links)
     (fail))
 
@@ -106,24 +110,6 @@
   (<- (gripper-meter-to-joint-multiplier ?robot ?multiplier)
     (fail))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;; specific configurations
-
-  ;; (<- (robot-arms-parking-joint-states ?robot ?joint-states)
-  ;;   (fail))
-  ;; (<- (robot-arms-parking-joint-states ?robot ?joint-states ?arm)
-  ;;   (fail))
-
-  ;; (<- (robot-arms-carrying-joint-states ?robot ?joint-states)
-  ;;   (fail))
-  ;; (<- (robot-arms-carrying-joint-states ?robot ?joint-states ?arm)
-  ;;   (fail))
-
-  ;; (<- (end-effector-parking-pose ?robot ?pose ?arm)
-  ;;   (fail))
-
-  ;; (<- (robot-pre-grasp-joint-states ?robot ?joint-states)
-  ;;   (fail))
-
   (<- (planning-group ?robot ?arms ?group-name)
     (fail))
 
@@ -132,7 +118,3 @@
 
   (<- (tcp-in-ee-pose ?robot ?transform)
     (fail)))
-
-
-
-

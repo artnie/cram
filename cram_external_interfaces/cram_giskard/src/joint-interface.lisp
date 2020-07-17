@@ -31,14 +31,88 @@
 
 (defparameter *giskard-convergence-delta-joint* 0.17 "in radiants, about 10 degrees")
 
-(defun make-giskard-joint-action-goal (joint-state-left joint-state-right)
-  (declare (type list joint-state-left joint-state-right))
+(defun make-giskard-joint-action-goal (joint-state-left joint-state-right
+                                       align-planes-left align-planes-right)
+  (declare (type list joint-state-left joint-state-right)
+           (type boolean align-planes-left align-planes-right))
   (roslisp:make-message
    'giskard_msgs-msg:MoveGoal
    :type (roslisp:symbol-code 'giskard_msgs-msg:MoveGoal :plan_and_execute)
    :cmd_seq (vector
              (roslisp:make-message
               'giskard_msgs-msg:movecmd
+              :constraints
+              (map 'vector #'identity
+                   (remove
+                    NIL
+                    (list
+                     ;; (when align-planes-left
+                     ;;   (roslisp:make-message
+                     ;;    'giskard_msgs-msg:constraint
+                     ;;    :type
+                     ;;    "AlignPlanes"
+                     ;;    :parameter_value_pair
+                     ;;    (let ((stream (make-string-output-stream)))
+                     ;;      (yason:encode
+                     ;;       (cut:recursive-alist-hash-table
+                     ;;        `(("root" . "base_footprint")
+                     ;;          ("tip" . "refills_finger")
+                     ;;          ("root_normal"
+                     ;;           . (("header"
+                     ;;               . (("stamp" . (("secs" . 0.0)
+                     ;;                              ("nsecs" . 0.0)))
+                     ;;                  ("frame_id" . "base_footprint")
+                     ;;                  ("seq" . 0)))
+                     ;;              ("vector" . (("x" . 0.0)
+                     ;;                           ("y" . 0.0)
+                     ;;                           ("z" . 1.0)))))
+                     ;;          ("tip_normal"
+                     ;;           . (("header"
+                     ;;               . (("stamp" . (("secs" . 0.0)
+                     ;;                              ("nsecs" . 0.0)))
+                     ;;                  ("frame_id" . "base_footprint")
+                     ;;                  ("seq" . 0)))
+                     ;;              ("vector"
+                     ;;               . (("x" . 0.0)
+                     ;;                  ("y" . 0.0)
+                     ;;                  ("z" . 1.0))))))
+                     ;;        :test #'equal)
+                     ;;       stream)
+                     ;;      (get-output-stream-string stream))))
+                     ;; (when align-planes-right
+                     ;;   (roslisp:make-message
+                     ;;    'giskard_msgs-msg:constraint
+                     ;;    :type
+                     ;;    "AlignPlanes"
+                     ;;    :parameter_value_pair
+                     ;;    (let ((stream (make-string-output-stream)))
+                     ;;      (yason:encode
+                     ;;       (cut:recursive-alist-hash-table
+                     ;;        `(("root" . "base_footprint")
+                     ;;          ("tip" . "refills_finger")
+                     ;;          ("tip_normal"
+                     ;;           . (("header"
+                     ;;               . (("stamp" . (("secs" . 0.0)
+                     ;;                              ("nsecs" . 0.0)))
+                     ;;                  ("frame_id" . "refills_finger")
+                     ;;                  ("seq" . 0)))
+                     ;;              ("vector"
+                     ;;               . (("x" . 0.0)
+                     ;;                  ("y" . 1.0)
+                     ;;                  ("z" . 0.0)))))
+                     ;;          ("root_normal"
+                     ;;           . (("header"
+                     ;;               . (("stamp" . (("secs" . 0.0)
+                     ;;                              ("nsecs" . 0.0)))
+                     ;;                  ("frame_id" . "base_footprint")
+                     ;;                  ("seq" . 0)))
+                     ;;              ("vector" . (("x" . 0.0)
+                     ;;                           ("y" . 0.0)
+                     ;;                           ("z" . 1.0))))))
+                     ;;        :test #'equal)
+                     ;;       stream)
+                     ;;      (get-output-stream-string stream))))
+                     )))
               :joint_constraints (vector (roslisp:make-message
                                           'giskard_msgs-msg:jointconstraint
                                           :type (roslisp:symbol-code
@@ -80,15 +154,15 @@
               (cut:var-value '?joints
                              (cut:lazy-car
                               (prolog:prolog
-                               `(cram-robot-interfaces:arm-joints
-                                 ,(rob-int:current-robot-symbol)
-                                 ,arm ?joints))))))
-        (list joint-names
-              (joints:joint-positions joint-names)))))
+                               `(and (rob-int:robot ?robot)
+                                     (rob-int:arm-joints ?robot ,arm ?joints)))))))
+        (unless (cut:is-var joint-names)
+          (list joint-names
+                (joints:joint-positions joint-names))))))
 
 (defun ensure-giskard-joint-input-parameters (left-goal right-goal)
   (flet ((ensure-giskard-joint-goal (goal arm)
-           (if (and (listp goal) (= (length goal) 7))
+           (if (and (listp goal) (or (= (length goal) 7) (= (length goal) 6)))
                (get-arm-joint-names-and-positions-list arm goal)
                (and (if goal
                         (roslisp:ros-warn (low-level giskard)
@@ -103,9 +177,9 @@
 (defun ensure-giskard-joint-arm-goal-reached (arm goal-configuration convergence-delta-joint)
   (if (and (listp goal-configuration) (car goal-configuration))
       (let ((configuration (second (get-arm-joint-names-and-positions-list arm))))
-        (values (cram-tf:values-converged (joints:normalize-joint-angles
+        (values (cram-tf:values-converged (cram-tf:normalize-joint-angles
                                            configuration)
-                                          (joints:normalize-joint-angles
+                                          (cram-tf:normalize-joint-angles
                                            (mapcar #'second goal-configuration))
                                           convergence-delta-joint)
                 configuration))
@@ -116,20 +190,22 @@
 (defun ensure-giskard-joint-goal-reached (status
                                           goal-configuration-left goal-configuration-right
                                           convergence-delta-joint)
+  (print goal-configuration-left)
+  (print goal-configuration-right)
   (when (eql status :preempted)
     (roslisp:ros-warn (giskard arm-joints) "Giskard action preempted.")
     (return-from ensure-giskard-joint-goal-reached))
   (when (eql status :timeout)
-    (roslisp:ros-warn (giskard arm-joints) "Giskard action timed out."))
+    (roslisp:ros-warn (pr2-ll giskard-joint) "Giskard action timed out."))
   (flet ((throw-failure (arm goal-configuration current-configuration)
            (cpl:fail 'common-fail:manipulation-goal-not-reached
                      :description (format nil "Giskard did not converge to goal:~%~
                                                    ~a (~a)~%should have been at~%~a~%~
                                                    with delta-joint of ~a."
                                                 arm
-                                                (joints:normalize-joint-angles
+                                                (cram-tf:normalize-joint-angles
                                                  current-configuration)
-                                                (joints:normalize-joint-angles
+                                                (cram-tf:normalize-joint-angles
                                                  (mapcar #'second goal-configuration))
                                                 convergence-delta-joint))))
     (multiple-value-bind (reached current-configuration)
@@ -140,23 +216,32 @@
       (unless reached (throw-failure :right goal-configuration-right current-configuration)))))
 
 (defun call-giskard-joint-action (&key
-                                    goal-configuration-left goal-configuration-right action-timeout
-                                    (convergence-delta-joint *giskard-convergence-delta-joint*))
+                                    goal-configuration-left
+                                    goal-configuration-right
+                                    align-planes-left
+                                    align-planes-right
+                                    action-timeout
+                                    (convergence-delta-joint
+                                     *giskard-convergence-delta-joint*))
   (declare (type list goal-configuration-left goal-configuration-right)
            (type (or null number) action-timeout convergence-delta-joint))
   (multiple-value-bind (joint-state-left joint-state-right)
-      (ensure-giskard-joint-input-parameters goal-configuration-left goal-configuration-right)
-    
+      (ensure-giskard-joint-input-parameters
+       goal-configuration-left goal-configuration-right)
     (if (and (ensure-giskard-joint-arm-goal-reached :left goal-configuration-left convergence-delta-joint)
              (ensure-giskard-joint-arm-goal-reached :right goal-configuration-right convergence-delta-joint))
         (roslisp:ros-info (low-level giskard) "Arms are already in goal-configuration.")
         (multiple-value-bind (result status)
-            (actionlib-client:call-simple-action-client
-             'giskard-action
-             :action-goal (make-giskard-joint-action-goal joint-state-left joint-state-right)
-             :action-timeout action-timeout)
-          (ensure-giskard-joint-goal-reached status goal-configuration-left goal-configuration-right
-                                             convergence-delta-joint)
-          (values result status)
-          ;; return the joint state, which is our observation
-          (joints:full-joint-states-as-hash-table)))))
+        (actionlib-client:call-simple-action-client
+         'giskard-action
+         :action-goal (make-giskard-joint-action-goal
+                       joint-state-left joint-state-right
+                       align-planes-left align-planes-right)
+         :action-timeout action-timeout)
+      (ensure-giskard-joint-goal-reached
+       status goal-configuration-left goal-configuration-right
+       convergence-delta-joint)
+      (values result status)
+      ;; return the joint state, which is our observation
+      (joints:full-joint-states-as-hash-table)))))
+

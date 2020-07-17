@@ -41,12 +41,16 @@
                                       :collision-object-b (third rest-arguments)
                                       :collision-object-b-link (fourth rest-arguments)
                                       :collision-object-a (fifth rest-arguments)
-                                      :move-the-ass (sixth rest-arguments)
-                                      :constraints (seventh rest-arguments)
-                                      ))
+                                      :move-base (sixth rest-arguments)
+                                      :prefer-base (seventh rest-arguments)
+                                      :align-planes-left (eighth rest-arguments)
+                                      :align-planes-right (ninth rest-arguments)
+                                      :constraints (tenth rest-arguments)))
       (cram-common-designators:move-joints
        (call-giskard-joint-action :goal-configuration-left argument-1
-                                  :goal-configuration-right (first rest-arguments)))
+                                  :goal-configuration-right (first rest-arguments)
+                                  :align-planes-left (second rest-arguments)
+                                  :align-planes-right (third rest-arguments)))
       (cram-common-designators:move-base
        (call-giskard-base-action :goal-pose argument-1))
       (cram-common-designators:move-torso
@@ -73,7 +77,8 @@
         (desig:desig-prop ?motion-designator (:type :gripping))
         (desig:desig-prop ?motion-designator (:type :opening-gripper))
         (desig:desig-prop ?motion-designator (:type :closing-gripper))
-        (desig:desig-prop ?motion-designator (:type :moving-gripper-joint))))
+        (desig:desig-prop ?motion-designator (:type :moving-gripper-joint))
+        (desig:desig-prop ?motion-designator (:joint-states ?_))))
 
   (prolog:<- (cpm:available-process-module giskard-pm)
     (prolog:not (cpm:projection-running ?_))))
