@@ -28,9 +28,9 @@
 ;;; POSSIBILITY OF SUCH DAMAGE.
 (in-package :demo)
 
-(defparameter *plate-x* -1.202d0) 
-(defparameter *plate-y* 1.44d0) ;; 1.6)
-(defparameter *plate-z* 0.884d0);; 0.8626)
+(defparameter *plate-x* -1.152d0) 
+(defparameter *plate-y* 1.46d0) ;; 1.6)
+(defparameter *plate-z* 0.8676) ;;0.884d0);;
 
 (defparameter *plate-rad-x* 0.36)
 (defparameter *plate-rad-y* 0.60)
@@ -77,6 +77,7 @@
 (defparameter *wood-plane* '(0.823 0.698 0.513))
 
 (defparameter *base-x* -2.75)
+(defparameter *base-most-left-side-left-hand-pose* `((,*base-x* 2.2 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
 (defparameter *base-very-left-side-left-hand-pose* `((,*base-x* 2.0 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
 (defparameter *base-left-side-left-hand-pose* `((,*base-x* 1.5 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
 (defparameter *base-somewhat-left-side-left-hand-pose* `((,*base-x* 1.3 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
@@ -84,7 +85,7 @@
 ;; (defparameter *base-right-side-left-hand-pose* `((,*base-x* 0.9 0) (0 0 0 1)))
 (defparameter *base-right-side-left-hand-pose* `((,*base-x* 0.7 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
 (defparameter *base-very-right-side-left-hand-pose* `((,*base-x* 0.35 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
-(defparameter *base-touch-pose* `((,(- *base-x* 0.2) 1.5 0) (0 0 0 1)))
+(defparameter *base-touch-pose* `((,(- *base-x* 0.1) 1.5 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
 
 
 (defparameter *object-spawning-data*
@@ -196,7 +197,7 @@
   (palpate-board)  
   ;; 1
   (go-connect :chassis *base-very-left-side-left-hand-pose* ;; *base-very-left-side-left-hand-pose*
-              :holder-plane-horizontal *base-left-side-left-hand-pose* ;; *base-middle-side-left-hand-pose*
+              :holder-plane-horizontal *base-most-left-side-left-hand-pose* ;; *base-middle-side-left-hand-pose*
               :horizontal-attachment)
   ;; 2
   (go-connect :bottom-wing *base-very-right-side-left-hand-pose*
