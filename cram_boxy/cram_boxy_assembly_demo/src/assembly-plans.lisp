@@ -72,18 +72,19 @@
                         (tx (x torque wrench))
                         (ty (y torque wrench))
                         (tz (z torque wrench))) msg
-    (if (< fz -3)
-        (if (and (> fy 2.0) (> fy fx fz)) 
+    (if (< fz -1.5)
+        (if ;; (and (> fy 1.0) 
+         (> (abs ty) (abs tx))
             ;; +-x
-            (if (> tz tx ty)
+            (if (> 0 ty)
                 '(-1 0 :+x-off)
-                (if (> tz ty tx)
+                (if (> ty 0)
                     '(1 0 :-x-off)
                     '(0 0 :unknown)))
             ;; +-y
-            (if (or (> tz tx ty))
+            (if (> 0 tx);; (or (> tz tx ty))
                 '(0 -1 :+y-off)
-                (if (> tx tz ty)
+                (if (> tx 0)
                     '(0 1 :-y-off)
                     '(0 0 :unknown))))
         '(0 0 :success))))
@@ -213,40 +214,54 @@ for one value. The vector will be normalized to length 1."
                            (car
                             (prolog `(and (rob-int:robot ?robot)
                                           (rob-int:gripper-joint ?robot :left ?joint)))))))
-         (?constraints (append ?gripper-joint '("triangle_base_joint"
-                                                "odom_x_joint"
-                                                "odom_y_joint"
-                                                "odom_z_joint")))
+         (?constraints (append
+                        ?gripper-joint
+                        '("triangle_base_joint")))
+         (?constraints-wo-base (append
+                                ?gripper-joint
+                                '("odom_x_joint"
+                                  "odom_y_joint"
+                                  "odom_z_joint")))
+         (?constraints-wo-all (append
+                                ?gripper-joint
+                                '("triangle_base_joint"
+                                  "odom_x_joint"
+                                  "odom_y_joint"
+                                  "odom_z_joint")))
          (?1st-touch-pose (list (destructuring-bind (x-off y-off z-off) ?direction
                                   (cram-tf:translate-pose (car (last ?pose))
                                                           :x-offset x-off
                                                           :y-offset y-off
                                                           :z-offset  z-off))))
-         (?2nd-touch-pose (list (destructuring-bind (x-off y-off z-off) ?direction
+         (?2nd-touch-pose (destructuring-bind (x-off y-off z-off) ?direction
+                            (list (cram-tf:translate-pose (car (last ?pose))
+                                                          :x-offset (* x-off 0.9)
+                                                          :y-offset (* y-off 0.9)
+                                                          :z-offset (* z-off 0.9))
                                   (cram-tf:translate-pose (car (last ?pose))
-                                                          :x-offset (* x-off 1.5)
-                                                          :y-offset (* y-off 1.5)
-                                                          :z-offset (* z-off 1.5))))))
+                                                          :x-offset (* x-off 1.2)
+                                                          :y-offset (* y-off 1.2)
+                                                          :z-offset (* z-off 1.2))))))
     ;;Go home
     ;; (home-torso)
     
     ;; (home-arms)
-    ;;Move to suitable position to touch the board
-    (break "moving base to table")
-    (let* ((?nav-goal `((,*base-x* 2.0 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
-           (?pose (cl-transforms-stamped:pose->pose-stamped
-                   cram-tf:*fixed-frame* 0.0
-                   (cram-tf:translate-pose (btr:ensure-pose ?nav-goal)
-                                           :x-offset (- (first ?direction))
-                                           :y-offset (- (second ?direction))
-                                           :z-offset (- (third ?direction))))))
-          (exe:perform
-           (desig:an action
-                     (type going)
-                     (target (desig:a location
-                                      (pose ?pose))))))
-    (break "closing the gripper")
-    (setf giskard::*max-velocity* 0.1)
+    ;; Move to suitable position to touch the board
+    ;; (break "moving base to table")
+    ;; (let* ((?nav-goal `((,*base-x* 2.0 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
+    ;;        (?pose (cl-transforms-stamped:pose->pose-stamped
+    ;;                cram-tf:*fixed-frame* 0.0
+    ;;                (cram-tf:translate-pose (btr:ensure-pose ?nav-goal)
+    ;;                                        :x-offset (- (first ?direction))
+    ;;                                        :y-offset (- (second ?direction))
+    ;;                                        :z-offset (- (third ?direction))))))
+    ;;       (exe:perform
+    ;;        (desig:an action
+    ;;                  (type going)
+    ;;                  (target (desig:a location
+    ;;                                   (pose ?pose))))))
+    
+    #+old
     (cpl:par
       (roslisp:ros-info (palpating) "Closing gripper")
       ;;(boxy-ll::move-gripper-joint :action-type-or-position :close :left-or-right :left)
@@ -289,17 +304,36 @@ for one value. The vector will be normalized to length 1."
       ;;                 (constraints ?constraints)))))
       )
 
-    ;; Move gripper until force sensed
-    (roslisp:ros-info (palpating) "Moving gripper to touch object.")
-    (break "zero wrench")
-    (boxy-ll::zero-wrench-sensor)
-    (break "set impedance loose and velocity very-slow")
-    (roslisp:set-param "joint_impedance" "loose")
-    (roslisp:set-param "max_joint_velocity" "very-slow")
-    ;; (break "set max-velocity to 0.01")
-    ;; (setf giskard::*max-velocity* 0.01)
-    (break "touch until sum of force is greater than 2")
-    (roslisp:ros-info (palpating) "Moving close to object.")
+    ;; (break "closing the gripper")
+    ;; (setf giskard::*max-velocity* 0.1)
+    ;; (roslisp:ros-info (palpating) "Closing gripper")
+    ;;   ;;(boxy-ll::move-gripper-joint :action-type-or-position :close :left-or-right :left)
+    ;;   (exe:perform
+    ;;    (desig:an action
+    ;;              (type closing-gripper)
+    ;;              (gripper ?arm)))
+    
+    (break "Reaching pre-touch pose")
+    (exe:perform
+     (desig:an action
+               (type reaching)
+               (desig:when (eql ?arm :left)
+                 (left-poses ?pose))
+               (desig:when (eql ?arm :right)
+                 (right-poses ?pose))
+               (constraints ?constraints-wo-all)))
+
+    ;; ;; Move gripper until force sensed
+    ;; (roslisp:ros-info (palpating) "Moving gripper to touch object.")
+    ;; (break "zero wrench")
+    ;; (boxy-ll::zero-wrench-sensor)
+    ;; (break "set impedance loose and velocity very-slow")
+    ;; (roslisp:set-param "joint_impedance" "loose")
+    ;; (roslisp:set-param "max_joint_velocity" "very-slow")
+    ;; ;; (break "set max-velocity to 0.01")
+    ;; ;; (setf giskard::*max-velocity* 0.01)
+    ;; (break "touch until sum of force is greater than 2")
+    ;; (roslisp:ros-info (palpating) "Moving close to object.")
 
     ;; (cpl:pursue
     ;;       (and (cpl:wait-for (cpl:> (cpl:fl-funcall #'force-aggregated boxy-ll:*wrench-state-fluent*) 3))
@@ -317,6 +351,7 @@ for one value. The vector will be normalized to length 1."
     ;;                  (right-poses ?flex-right-put-poses)
     ;;                  (constraints ?constraints))))
 
+    
     (let (touched)
       (cpl:pursue
         (and (cpl:wait-for (cpl-impl:fl> (cpl:fl-funcall #'force-aggregated boxy-ll:*wrench-state-fluent*) 4.0))
@@ -329,7 +364,7 @@ for one value. The vector will be normalized to length 1."
                      (left-poses ?2nd-touch-pose))
                    (desig:when (eql ?arm :right)
                      (right-poses ?2nd-touch-pose))
-                   (constraints ?constraints)))))
+                   (constraints ?constraints-wo-all)))))
     (roslisp:set-param "joint_impedance" "regular")
     (roslisp:set-param "max_joint_velocity" "regular")
     (break "[touch] Touching plan finished. Is the motion done jet?")
