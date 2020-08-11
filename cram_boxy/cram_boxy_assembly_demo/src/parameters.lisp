@@ -28,8 +28,8 @@
 ;;; POSSIBILITY OF SUCH DAMAGE.
 (in-package :demo)
 
-(defparameter *plate-x* -1.152d0) 
-(defparameter *plate-y* 1.46d0) ;; 1.6)
+(defparameter *plate-x* -1.1906195322672526d0) 
+(defparameter *plate-y* 1.4086977640787761d0) ;; 1.6)
 (defparameter *plate-z* 0.8676) ;;0.884d0);;
 
 (defparameter *plate-rad-x* 0.36)
@@ -50,8 +50,8 @@
 (defparameter *holder-underbody-rad-x* 0.0925)
 (defparameter *holder-underbody-rad-y* 0.025)
 (defparameter *holder-underbody-rad-z* 0.024)
-(defparameter *holder-plane-horizontal-rad-x* 0.237)
-(defparameter *holder-plane-horizontal-rad-y* 1.11)
+(defparameter *holder-plane-horizontal-rad-x* 0.205)
+(defparameter *holder-plane-horizontal-rad-y* 1.099)
 (defparameter *holder-plane-horizontal-rad-z* 0.1202)
 (defparameter *holder-window-rad-x* 0.026)
 (defparameter *holder-window-rad-y* 0.025)
@@ -127,9 +127,9 @@
     ;;                   ,man-int:*rotation-around-z-90-list*))
 
     ;; ;; rear wing is already well positioned
-    (:rear-wing :rear-wing ,*yellow-plane*
-               ((0.163 ,(+ 0.569  0.541) 0.137);; (0.079 0.599 0.056)
-                ,man-int:*rotation-around-z+90-list*))
+    ;; (:rear-wing :rear-wing ,*yellow-plane*
+    ;;            ((0.163 ,(+ 0.569  0.541) 0.137);; (0.079 0.599 0.056)
+    ;;             ,man-int:*rotation-around-z+90-list*))
 
     ;; ;; ;; bolts are used intermediately
     (:bolt-1 :bolt ,*gray-plane*
