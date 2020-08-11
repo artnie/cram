@@ -319,9 +319,32 @@
         (COLLISION-MODE allow-all)))
     (boxy-ll::zero-wrench-sensor)))
 
+#+touching-js
+(("left_arm_0_joint" "left_arm_1_joint" "left_arm_2_joint" "left_arm_3_joint"
+  "left_arm_4_joint" "left_arm_5_joint" "left_arm_6_joint")
+ (-0.9119245409965515d0 0.6476925611495972d0 1.1286091804504395d0
+  -1.3791991472244263d0 -0.026325132697820663d0 0.5115517377853394d0
+  -1.454879879951477d0))
+
 #+TOUCH-board-front
 (let* ((?constraint '("left_gripper_joint" "triangle_base_joint")))
-        (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :front :offset '(0 0 0))
+        (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :front :offset '(0 0.3 0))
+           (viz-debug-pose ?pose)
+          (with-giskard-controlled-robot
+            (let ((?object (exe:perform
+                            (desig:a motion
+                                     (type world-state-detecting)
+                                     (object (desig:an object (type :big-wooden-plate)))))))
+              
+              (touch :object ?object
+                     :arm :left
+                     :pose ?pose
+                     :direction ?dir)
+              ))))
+
+#+TOUCH-board-left
+(let* ((?constraint '("left_gripper_joint" "triangle_base_joint")))
+        (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :left :offset '(-0.33 0 0.025))
            (viz-debug-pose ?pose)
           (with-giskard-controlled-robot
             (let ((?object (exe:perform
