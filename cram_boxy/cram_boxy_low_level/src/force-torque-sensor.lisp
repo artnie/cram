@@ -28,8 +28,6 @@
 
 (in-package :boxy-ll)
 
-(defparameter *wrench-too-high-limit* 3.0 "In N/m.")
-
 (defparameter *wrench-zeroing-service-retries* 3 "how many times")
 
 (defvar *wrench-state-sub* nil
@@ -59,7 +57,7 @@
          (wrench-state-filtered-sub-cb (wrench-state-msg)
            (setf (cpl:value *wrench-state-filtered-fluent*) wrench-state-msg)))
     (setf *wrench-state-sub*
-          (roslisp:subscribe "left_arm_kms40/wrench"
+          (roslisp:subscribe "left_arm_kms40/wrench_zeroed"
                              "geometry_msgs/WrenchStamped"
                              #'wrench-state-sub-cb))
     (setf *wrench-state-filtered-sub*
@@ -75,13 +73,16 @@
 
 (defun zero-wrench-sensor ()
   (loop for i from 1 to *wrench-zeroing-service-retries*
-        until (roslisp:wait-for-service "left_arm_kms40/set_tare" 5.0)
+        until (roslisp:wait-for-service "ft_cleaner/update_offset" 5.0)
+        ;; (roslisp:wait-for-service "left_arm_kms40/set_tare" 5.0)
         do (roslisp:ros-info (force-torque-sensor zero-sensor) "Waiting for zeroing service...")
         finally (if (> i *wrench-zeroing-service-retries*)
                     (progn
                       (roslisp:ros-warn (force-torque-sensor zero-sensor)
                                         "Service unreachable. Stop using force-torque sensor.")
                       (setf *wrench-zeroing-service-retries* 0))
-                    (roslisp:call-service "left_arm_kms40/set_tare"
-                                          "std_srvs/SetBool" 
-                                          (roslisp:make-request 'std_srvs-srv:setbool :data T)))))
+                    (roslisp:call-service "ft_cleaner/update_offset" "std_srvs/Trigger")
+                    ;; (roslisp:call-service "left_arm_kms40/set_tare"
+                    ;;                       "std_srvs/SetBool" 
+                    ;;                       (roslisp:make-request 'std_srvs-srv:setbool :data T))
+                    )))
