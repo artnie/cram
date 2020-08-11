@@ -103,7 +103,7 @@
                 (number 30.0)
                 (keyword (ecase action-type-or-position
                            (:open 30.0)
-                           (:close 30.0)
+                           (:close 50.0)
                            (:grip 40.0)))))))
     (values position effort)))
 
