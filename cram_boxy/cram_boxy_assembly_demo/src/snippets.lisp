@@ -320,11 +320,13 @@
     (boxy-ll::zero-wrench-sensor)))
 
 #+touching-js
-(("left_arm_0_joint" "left_arm_1_joint" "left_arm_2_joint" "left_arm_3_joint"
-  "left_arm_4_joint" "left_arm_5_joint" "left_arm_6_joint")
- (-0.9119245409965515d0 0.6476925611495972d0 1.1286091804504395d0
-  -1.3791991472244263d0 -0.026325132697820663d0 0.5115517377853394d0
-  -1.454879879951477d0))
+'(("left_arm_0_joint" -0.9119245409965515d0)
+  ("left_arm_1_joint" 0.6476925611495972d0)
+  ("left_arm_2_joint"  1.1286091804504395d0)
+  ("left_arm_3_joint" -1.3791991472244263d0)
+  ("left_arm_4_joint" -0.026325132697820663d0)
+  ("left_arm_5_joint" 0.5115517377853394d0)
+  ("left_arm_6_joint" -1.454879879951477d0))
 
 #+TOUCH-board-front
 (let* ((?constraint '("left_gripper_joint" "triangle_base_joint")))
