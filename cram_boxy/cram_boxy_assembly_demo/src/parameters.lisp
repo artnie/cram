@@ -50,7 +50,7 @@
 (defparameter *holder-underbody-rad-x* 0.0925)
 (defparameter *holder-underbody-rad-y* 0.025)
 (defparameter *holder-underbody-rad-z* 0.024)
-(defparameter *holder-plane-horizontal-rad-x* 0.205)
+(defparameter *holder-plane-horizontal-rad-x* 0.208)
 (defparameter *holder-plane-horizontal-rad-y* 1.099)
 (defparameter *holder-plane-horizontal-rad-z* 0.1202)
 (defparameter *holder-window-rad-x* 0.026)
@@ -216,7 +216,7 @@
   ;; so we have to attach them manually unfortunately.
   ;; this is required for later moving the whole plane onto another holder
   ;; 4
-  (btr:attach-object 'underbody 'rear-wing)
+  (btr:attach-object :underbody :rear-wing)
 
   ;; 5
   (go-connect :upper-body *base-right-side-left-hand-pose*
