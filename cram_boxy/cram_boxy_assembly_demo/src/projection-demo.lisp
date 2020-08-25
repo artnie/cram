@@ -31,8 +31,8 @@
 
 (defun spawn-objects-on-plate (&optional (spawning-poses *object-spawning-data*))
   ;; (btr-utils:kill-all-objects)
-  (btr:detach-all-objects (btr:get-robot-object))
-  (mapcar (alexandria:compose #'btr:detach-all-objects #'car) spawning-poses)
+  ;; (btr:detach-all-objects (btr:get-robot-object))
+  ;; (mapcar (alexandria:compose #'btr:detach-all-objects #'car) spawning-poses)
   ;; let ((object-types '(:breakfast-cereal :cup :bowl :spoon :milk)))
   ;; spawn objects at default poses
   (let ((objects (mapcar (lambda (object-name-type-pose-list)
@@ -69,25 +69,28 @@
   (format t "~%PERFORMING~%~A~%~%" designator))
 
 
-(defun exec (phase &key (only t) reset)
-  (when reset (reset))
-  (if (<= 0 phase (length *assembly-steps*))
-      (let ((assembly-step (nth phase *assembly-steps*)))
-        (roslisp:ros-info (assembly exec)
-                          "Executing phase ~a:~%Putting ~a on ~a."
-                          phase (nth 1 assembly-step) (nth 3 assembly-step))
-        (with-giskard-controlled-robot
-          (if only
-            (eval (nth phase *assembly-steps*))
-            (loop for step to phase
-                  do (eval (nth step *assembly-steps*))))))
-      (roslisp:ros-warn (assembly exec) "There is no phase ~a." phase)))
-
-(defun demo (&optional (until-phase 13))
-  ;;(setf cram-robosherlock::*no-robosherlock-mode* t)
-  ;; (spawn-objects-on-plate)
-  (reset)
-  (exec until-phase))
+(defun exec (&key (only t) reset)
+  (format t "Executing only selected phase: ~a~%" only)
+  (format t "Resetting before execution: ~a~%" reset)
+  (format t "Choose phase:~%")
+  (loop for phase in *assembly-steps*
+        for id to (1- (length *assembly-steps*))
+        do (if (eq (car phase) 'go-connect)
+               (format t "~a) ~a on ~a~%" id (second phase) (car (last phase)))
+               (format t "~a) ~a~%" id phase)))
+  (let ((phase-id (read)))
+    (if (<= 0 phase-id (1- (length *assembly-steps*)))
+        (let ((assembly-step (nth phase-id *assembly-steps*)))
+          (when reset (reset))
+          (roslisp:ros-info (assembly exec)
+                            "Executing phase ~a:~%Putting ~a on ~a."
+                            phase-id (nth 1 assembly-step) (nth 3 assembly-step))
+          (with-giskard-controlled-robot
+            (if only
+                (eval (nth phase-id *assembly-steps*))
+                (loop for step to phase-id
+                      do (eval (nth step *assembly-steps*))))))
+        (roslisp:ros-warn (assembly exec) "There is no phase ~a." phase-id))))
 
 (defun initialize-attachments ()
   (btr:attach-object :motor-grill :underbody)
@@ -121,8 +124,8 @@
 
 (defun go-perceive (?object-type ?nav-goal)
   ;; park arms
-  ;; (home-torso)
-  ;; (home-arms)
+  (home-torso)
+  (home-arms)
   
   ;; drive to right location
   (let ((?pose (cl-transforms-stamped:pose->pose-stamped
@@ -133,7 +136,8 @@
      (desig:an action
                (type going)
                (target (desig:a location
-                                (pose ?pose))))))
+                                (pose ?pose)))))
+    )
 
   (exe:perform
        (desig:a motion
@@ -169,8 +173,8 @@
                         ;; "odom_z_joint"
                         ;; "triangle_base_joint" 
                         )))
-    ;; (home-torso)
-    ;; (home-arms)
+    (home-torso)
+    (home-arms)
 
     (btr:detach-all-objects (btr:object btr:*current-bullet-world* (desig:desig-prop-value ?object :name)))
     ;; pick object
@@ -207,18 +211,7 @@
                  (target (desig:a location
                                   (on ?other-object)
                                   (for ?object)
-                                  (attachment ?attachment-type))))
-       ;; (desig:an action
-       ;;           (type placing)
-       ;;           (arm left)
-       ;;           (object ?object)
-       ;;           ;; this location designator is resolved in
-       ;;           ;; cram_boxy_plans/src/action-designators.lisp
-       ;;           (target (desig:a location
-       ;;                            (on ?other-object)
-       ;;                            (for ?object)
-       ;;                            (attachment ?attachment-type))))
-       )
+                                  (attachment ?attachment-type)))))
       (values ?object ?other-object))))
 
 (defun palpate-board ()
@@ -226,17 +219,17 @@
                   (desig:an action
                             (type detecting)
                             (object (desig:an object (name :big-wooden-plate)))))))
-    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :top :offset '(-0.3 0 0))
+    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :top :offset '(-0.3 0.3 0.0))
       (touch :object ?object
              :arm :left
              :pose pose
              :direction dir))
-    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :front)
+    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :front :offset '(0.0 0.3 0.0))
       (touch :object ?object
              :arm :left
              :pose pose
              :direction dir))
-    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :left)
+    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :left :offset '(-0.3 0.0 0.0))
       (touch :object ?object
              :arm :left
              :pose pose
