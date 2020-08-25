@@ -1,5 +1,44 @@
 (in-package :demo)
 
+(defun euler-list->quaternion (euler-list)
+  (cl-tf:euler->quaternion :ax (first euler-list)
+                           :ay (second euler-list)
+                           :az (third euler-list)))
+
+(defun split-trajectory-between (pose-1 pose-2 &key (splits 4))
+  (declare (type cl-tf:pose-stamped pose-1 pose-2))
+  "frames must be equal!!!"
+  (let* ((translation (cl-tf:v- (cl-tf:origin pose-2)
+                                (cl-tf:origin pose-1)))
+         (rotation (cl-tf:quaternion->euler
+                    (cl-tf:q* (cl-tf:orientation pose-2)
+                              (cl-tf:q-inv (cl-tf:orientation pose-1)))
+                    :just-values t))
+         (frame (cl-tf:frame-id pose-1))
+         (stamp 0.0))
+    (mapcar (lambda (tr)
+                  (cl-tf:make-pose-stamped
+                   frame stamp
+                   (cl-tf:v+ (cl-tf:origin pose-1) (first tr))
+                   (cl-tf:q*  (euler-list->quaternion (second tr)) (cl-tf:orientation pose-1))))
+            (loop for step from 1 to splits
+                  collect (list
+                           (cl-tf:v* translation (* (/ 1 splits) step))
+                           (mapcar (alexandria:curry #'* (* (/ 1 splits) step))
+                                   rotation))))))
+
+#+test-trajectory-split
+(let* ((pose-1 (cl-tf:make-pose-stamped
+                      "map" 0.0
+                     (cl-tf:make-3d-vector 1 0 0)
+                     (cl-tf:euler->quaternion :ay (/ pi 2))))
+            (pose-2 (cl-tf:make-pose-stamped
+                     "map" 0.0
+                     (cl-tf:make-3d-vector 0 0 1)
+                      (cl-tf:euler->quaternion :ay pi :az (/ pi 2)))))
+        (split-trajectory-between pose-1 pose-2))
+
+
 
 (defun grasp-when-force (&optional open)
   (with-giskard-controlled-robot
