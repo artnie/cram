@@ -101,6 +101,30 @@
                     '(0 0 :unknown))))
         '(0 0 :success))))
 
+(defparameter *fl-default-sample-rate* 1.0)
+
+(defgeneric fl-active (fluent &optional sample-rate)
+  (:documentation "Waits double the `sample-rate' in Hz for `fluent' to be pulsed.
+                   On the first `cpl:whenever' the body is always executed when
+                   the `fluent' was pulsed at least once after creation, so the test
+                   passes on the next observed pulse, and returns NIL otherwise.")
+  (:method ((fluent cpl:value-fluent) &optional (sample-rate *fl-default-sample-rate*))
+    (let ((init-pulse-passed nil)) ;; not necessary to set nil, but for better readability 
+      (cpl:pursue
+        (cpl:whenever ((cpl:pulsed fluent))
+          (if init-pulse-passed
+              (return T)
+              (setf init-pulse-passed T)))
+        (progn (sleep (/ 2.0 sample-rate))
+               (roslisp:ros-info (fl-active) "Fluent ~a is inactive." (cpl-impl:name fluent))
+               nil)))))
+
+(defgeneric fl-gate (fluent &optional sample-rate)
+  (:documentation "Throws error when `fluent' is not active.")
+  (:method ((fluent cpl:value-fluent) &optional (sample-rate *fl-default-sample-rate*))
+    (unless (fl-active fluent sample-rate)
+      (error "[touch plan] The fluent ~a is inactive." fluent))))
+
 ;;;;;;;;;;;;;;
 ;; TOUCHING ;;
 (defun touch-trajectory (object-name &key (from :front) (for-gripper T) (dist 0.1d0) (offset '(0 0 0)))
@@ -217,6 +241,7 @@ for one value. The vector will be normalized to length 1."
                 ((:pose ?pose))
                 ((:direction ?direction))
               &allow-other-keys)
+  (fl-gate boxy-ll:*wrench-state-fluent*)
   (unless (listp ?pose)
     (setf ?pose (list ?pose)))
   (let* ((?object-name (desig:desig-prop-value ?object :name))
@@ -338,7 +363,7 @@ for one value. The vector will be normalized to length 1."
     ;; ;; Move gripper until force sensed
     ;; (roslisp:ros-info (palpating) "Moving gripper to touch object.")
     ;; (break "zero wrench")
-    (boxy-ll::zero-wrench-sensor)
+    ;; (boxy-ll::zero-wrench-sensor)
     ;; (break "set impedance loose and velocity very-slow")
     ;; (roslisp:set-param "joint_impedance" "loose")
     ;; (roslisp:set-param "max_joint_velocity" "very-slow")
@@ -374,6 +399,8 @@ for one value. The vector will be normalized to length 1."
           ?right-touch-trajectory)
       (apply #'viz-trajectory-split ?left-touch-trajectory)
       (break "Following touch trajectory until force detected")
+      (fl-gate boxy-ll:*wrench-state-fluent*)
+      (boxy-ll::zero-wrench-sensor)
       (cpl:pursue
         (and (cpl:wait-for (cpl-impl:fl> (cpl:fl-funcall #'force-aggregated boxy-ll:*wrench-state-fluent*) 4.0))
              (roslisp:ros-info (palpating) "Object touched.")
@@ -422,6 +449,7 @@ for one value. The vector will be normalized to length 1."
                  ?left-reach-poses ?right-reach-poses
                  ?left-put-poses ?right-put-poses
                  ?left-retract-poses ?right-retract-poses))
+  (fl-gate boxy-ll:*wrench-state-fluent*)
   (roslisp:ros-info (assembly assemble) "Reach pose:~% ~a" ?left-reach-poses)
   (roslisp:ros-info (assembly assemble) "Put pose:~% ~a" ?left-put-poses)
   "Reach, put, assert assemblage if given, open gripper, retract grasp event, retract arm."
@@ -453,6 +481,8 @@ for one value. The vector will be normalized to length 1."
                            (car (last ?left-put-poses))
                            :splits 6)))
     (apply #'viz-trajectory-split ?left-trajectory)
+    (break "Moving gripper to touch object until force is detected.")
+    (fl-gate boxy-ll:*wrench-state-fluent*)
     (exe:perform
      (desig:an action
                (type putting)
@@ -619,6 +649,7 @@ for one value. The vector will be normalized to length 1."
                  ?left-put-poses ?right-put-poses
                  ?left-retract-poses ?right-retract-poses))
   "Reach, put, assert assemblage if given, open gripper, retract grasp event, retract arm."
+  (fl-gate boxy-ll:*wrench-state-fluent*)
   (perform (an action (type closing-gripper) (gripper left)))
   (unless (find "left_gripper_joint" (alexandria:flatten ?constraints) :test #'string=)
     (let ((gripper-constraint (if (and (car ?constraints)
