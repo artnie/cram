@@ -39,7 +39,7 @@
 (defvar *wrench-state-filtered-sub* nil
   "Filtered subscriber.")
 
-(defvar *wrench-state-filtered-fluent* (cpl:make-fluent :name :wrench-state)
+(defvar *wrench-state-filtered-fluent* (cpl:make-fluent :name :wrench-state-filtered)
   "Filtered fluent.")
 
 (defun reset-wrench-state ()
