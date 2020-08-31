@@ -420,7 +420,17 @@ for one value. The vector will be normalized to length 1."
     ;; Adjust object pose based on gripper position.
     (setf giskard::*max-velocity* 0.1)
 
-    (update-object-pose-from-touch ?object-name ?direction)))
+    (update-object-pose-from-touch ?object-name ?direction)
+    
+    (break "Reaching back to pre-touch pose")
+    (exe:perform
+     (desig:an action
+               (type reaching)
+               (desig:when (eql ?arm :left)
+                 (left-poses ?pose))
+               (desig:when (eql ?arm :right)
+                 (right-poses ?pose))
+               (constraints ?constraints-wo-all)))))
 ;; TOUCHING ;;
 ;;;;;;;;;;;;;;
 
