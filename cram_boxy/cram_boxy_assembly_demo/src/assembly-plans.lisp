@@ -69,7 +69,7 @@
                         (tx (x torque wrench))
                         (ty (y torque wrench))
                         (tz (z torque wrench))) msg
-    (nth (position axis '(fx fy fz tx ty tz))
+    (nth (position axis '(:fx :fy :fz :tx :ty :tz))
          (list fx fy fz tx ty tz))))
 
 (defun force-mean (msg)
@@ -284,19 +284,19 @@ for one value. The vector will be normalized to length 1."
     
     ;; (home-arms)
     ;; Move to suitable position to touch the board
-    (break "moving base to table")
-    (let* ((?nav-goal `((,*base-x* 2.0 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
-           (?pose (cl-transforms-stamped:pose->pose-stamped
-                   cram-tf:*fixed-frame* 0.0
-                   (cram-tf:translate-pose (btr:ensure-pose ?nav-goal)
-                                           :x-offset (- (first ?direction))
-                                           :y-offset (- (second ?direction))
-                                           :z-offset (- (third ?direction))))))
-          (exe:perform
-           (desig:an action
-                     (type going)
-                     (target (desig:a location
-                                      (pose ?pose))))))
+    ;; (break "moving base to table")
+    ;; (let* ((?nav-goal `((,*base-x* 2.0 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
+    ;;        (?pose (cl-transforms-stamped:pose->pose-stamped
+    ;;                cram-tf:*fixed-frame* 0.0
+    ;;                (cram-tf:translate-pose (btr:ensure-pose ?nav-goal)
+    ;;                                        :x-offset (- (first ?direction))
+    ;;                                        :y-offset (- (second ?direction))
+    ;;                                        :z-offset (- (third ?direction))))))
+    ;;       (exe:perform
+    ;;        (desig:an action
+    ;;                  (type going)
+    ;;                  (target (desig:a location
+    ;;                                   (pose ?pose))))))
     
     #+old
     (cpl:par
@@ -349,6 +349,25 @@ for one value. The vector will be normalized to length 1."
      (desig:an action
                (type closing-gripper)
                (gripper ?arm)))
+
+    ;; turn gripper before moving, bc giskard moves arm weird
+    (let* ((current-ee-pose (cl-tf:lookup-transform cram-tf:*transformer* "map" "left_gripper_tool_frame"))
+             (current-ee-origin (cl-tf:translation current-ee-pose))
+             (goal-ee-orientation (cl-tf:orientation (car (last ?pose))))
+             (?prepare-gripper-pose (list 
+                                     (cl-tf:make-pose-stamped
+                                      (cl-tf:frame-id current-ee-pose) 0.0
+                                      current-ee-origin goal-ee-orientation)))
+             (?constraints (append ?constraints-wo-all 
+                                   '("left_arm_0_joint" "left_arm_1_joint"
+                                     "left_arm_2_joint" "left_arm_3_joint"
+                                     "left_arm_4_joint" "left_arm_5_joint"))))
+        (exe:perform
+         (desig:an action
+                   (type reaching)
+                   (desig:when (eql ?arm :left)
+                     (left-poses ?prepare-gripper-pose))
+                   (constraints ?constraints))))
     
     (break "Reaching pre-touch pose")
     (exe:perform
@@ -388,7 +407,7 @@ for one value. The vector will be normalized to length 1."
     ;;                  (right-poses ?flex-right-put-poses)
     ;;                  (constraints ?constraints))))
 
-    
+    (break "Goal reached?")
     (let (touched
           (?left-touch-trajectory (split-trajectory-between
                               (cram-tf:strip-transform-stamped 
@@ -463,140 +482,237 @@ for one value. The vector will be normalized to length 1."
   (roslisp:ros-info (assembly assemble) "Reach pose:~% ~a" ?left-reach-poses)
   (roslisp:ros-info (assembly assemble) "Put pose:~% ~a" ?left-put-poses)
   "Reach, put, assert assemblage if given, open gripper, retract grasp event, retract arm."
-  (roslisp:ros-info (assembly assemble) "Reaching")
-  ;; (roslisp:set-param "joint_impedance" "regular")
-  ;; (roslisp:set-param "max_joint_velocity" "regular")
+
+  #+prepare-gripper-orientation
+  (let* ((current-ee-pose (cl-tf:lookup-transform cram-tf:*transformer* "map" "left_gripper_tool_frame"))
+         (current-ee-origin (cl-tf:translation current-ee-pose))
+         (goal-ee-orientation (cl-tf:orientation (car (last ?left-reach-poses))))
+         (?prepare-gripper-pose (list 
+                                 (cl-tf:make-pose-stamped
+                                  (cl-tf:frame-id current-ee-pose) 0.0
+                                  current-ee-origin
+                                  goal-ee-orientation)))
+         (?constraints (remove-duplicates
+                        (append ?constraints 
+                                '("left_arm_0_joint" "left_arm_1_joint"
+                                  "left_arm_2_joint" "left_arm_3_joint"
+                                  "left_arm_4_joint" "left_arm_5_joint"))
+                        :test #'string=)))
+    (exe:perform
+     (desig:an action
+               (type reaching)
+               (desig:when (eql ?arm :left)
+                 (left-poses ?prepare-gripper-pose))
+               (constraints ?constraints))))
+  
+  
+  #+reaching
   (cpl:with-failure-handling
       ((common-fail:manipulation-low-level-failure (e)
          (roslisp:ros-warn (pp-plans pick-up) "Manipulation messed up: ~a~%Ignoring." e)))
+    (roslisp:ros-info (assembly assemble) "Reaching")
     (exe:perform
      (desig:an action
                (type reaching)
                (left-poses ?left-reach-poses)
                (right-poses ?right-reach-poses)
                (constraints ?constraints))))
-  (roslisp:ros-info (assembly assemble) "Putting")
-  ;; (boxy-ll::zero-wrench-sensor)
 
-  
-  ;; (roslisp:set-param "joint_impedance" "loose-arm")
-  ;; (roslisp:set-param "max_joint_velocity" "very-slow")
+  (roslisp:ros-info (assembly assemble) "Putting")
+  (boxy-ll::zero-wrench-sensor)
   (setf giskard::*max-velocity* 0.01)
 
-  
-  (let ((?left-trajectory (split-trajectory-between
+  (break "Ready for heuristic magic?")
+  (let* ((?left-trajectory (split-trajectory-between
                            (cram-tf:strip-transform-stamped 
                             (cl-tf:lookup-transform cram-tf:*transformer*
                                                     "map" "left_gripper_tool_frame"))
                            (car (last ?left-put-poses))
-                           :splits 6)))
+                           :splits 10))
+         (?left-trajectory-copy (copy-list ?left-trajectory))
+         touched
+         (heuristic-results (make-hash-table :test #'equal))
+         (min-heuristic-data 4)
+         (max-heuristic-data 9)
+         (reposition-factor 0.0005))
     (apply #'viz-trajectory-split ?left-trajectory)
-    (break "Moving gripper to touch object until force is detected.")
-    (fl-gate boxy-ll:*wrench-state-fluent*)
-    (exe:perform
-     (desig:an action
-               (type putting)
-               (object ?object-designator)
-               (desig:when ?other-object-designator
-                 (supporting-object ?other-object-designator))
-               (left-poses ?left-trajectory)
-               (right-poses nil)
-               (constraints ?constraints))))
-  
-  ;; (let ((?flex-left-reach-poses (last ?left-reach-poses))
-  ;;       (?flex-right-reach-poses (last ?right-reach-poses))
-  ;;       (?flex-left-put-poses ?left-put-poses)
-  ;;       (?flex-right-put-poses ?right-put-poses)
-  ;;       (heuristic-response '(0 0 :init))
-  ;;       (reposition-factor 0.01))
-  ;;   (cpl:with-retry-counters ((clicking-retries 50))
-  ;;     (cpl:with-failure-handling
-  ;;         (((or common-fail:manipulation-low-level-failure
-  ;;               common-fail:manipulation-goal-not-reached) (e)
-  ;;            (roslisp:ros-warn (assembly assemble)
-  ;;                              "Manipulation messed up: ~a~%Ignoring." e)
-  ;;            (cpl:do-retry clicking-retries
-  ;;              (sleep 1) ;; waiting for force to stabilize#
+    (labels ((heuristic-data-sum ()
+               (apply #'+ (alexandria:hash-table-values heuristic-results)))
+             (dominant-result-found (key)
+               (< (gethash key heuristic-results) 
+                  (ceiling (/ (heuristic-data-sum) 2.0))))
+             (enough-data ()
+               (>= (heuristic-data-sum) min-heuristic-data))
+             (retract-from-touch (?previous-pose)
+               (break "Retract to re-touch.")
+               (exe:perform
+                (desig:an action
+                          (type putting)
+                          (object ?object-designator)
+                          (desig:when ?other-object-designator
+                            (supporting-object ?other-object-designator))
+                          (left-poses ?previous-pose)
+                          (right-poses nil)
+                          (constraints ?constraints))))
+             (follow-trajectory (?poses &optional ?previous-pose)
+               ;; terminates when last pose is reached
+               ;; without invoking z-axis force
+               (break "Move towards collision.")
+               (let ((?current-pose (list (pop ?poses))))
+                 (when ?current-pose
+                   (fl-gate boxy-ll:*wrench-state-fluent*)
+                   (boxy-ll::zero-wrench-sensor)
+                   (cpl:pursue
+                     (and (cpl:wait-for
+                           (cpl-impl:fl<
+                            (cpl:fl-funcall #'force-on-axis
+                                            boxy-ll:*wrench-state-fluent*
+                                            :fz)
+                            -1.0))
+                          (roslisp:ros-info (palpating) "Object touched.")
+                          (setf touched T))
+                     (exe:perform
+                      (desig:an action
+                                (type putting)
+                                (object ?object-designator)
+                                (desig:when ?other-object-designator
+                                  (supporting-object ?other-object-designator))
+                                (left-poses ?current-pose)
+                                (right-poses nil)
+                                (constraints ?constraints))))
+                   (if touched
+                       (let ((heuristic-result
+                               (or (sleep 1) ;; wait for force to stabilize
+                                   (cpl:value (cpl:fl-funcall #'chassis-heuristic
+                                                              boxy-ll:*wrench-state-fluent*)))))
+                         (setf touched nil)
+                         (if (gethash heuristic-result heuristic-results)
+                             (incf (gethash heuristic-result heuristic-results))
+                             (setf (gethash heuristic-result heuristic-results) 1))
+                         (if (and (dominant-result-found heuristic-result)
+                                  (enough-data))
+                             ;; suitable result found, applying offset to remaining poses
+                             ;; then go on trying
+                             (progn (break "result ~a found" heuristic-result)
+                                    (retract-from-touch ?previous-pose)
+                                    (setf heuristic-results (make-hash-table :test #'equal))
+                                    (follow-trajectory
+                                     (mapcar
+                                      (lambda (old-pose)
+                                        (cram-tf:translate-pose old-pose
+                                                                :x-offset (* reposition-factor
+                                                                             (first heuristic-result))
+                                                                :y-offset (* reposition-factor
+                                                                             (second heuristic-result))))
+                                      (append ?previous-pose ?current-pose ?poses))))
+                             ;; else get more data
+                             (if (or (< (heuristic-data-sum) min-heuristic-data)
+                                     (and (< min-heuristic-data (heuristic-data-sum) max-heuristic-data)
+                                          (not (dominant-result-found heuristic-result))))
+                                 (progn
+                                   (retract-from-touch ?previous-pose)
+                                   (follow-trajectory (append ?current-pose ?poses) ?previous-pose)))))
+                         (follow-trajectory ?poses ?current-pose))))))
+      (boxy-ll::zero-wrench-sensor)
+      (follow-trajectory ?left-trajectory-copy)
+      heuristic-results
+      ))
+      
+  #+old-heuristic-repositioning-code
+  (let ((?flex-left-reach-poses (last ?left-reach-poses))
+        (?flex-right-reach-poses (last ?right-reach-poses))
+        (?flex-left-put-poses ?left-put-poses)
+        (?flex-right-put-poses ?right-put-poses)
+        (heuristic-response '(0 0 :init))
+        (reposition-factor 0.01))
+    (cpl:with-retry-counters ((clicking-retries 50))
+      (cpl:with-failure-handling
+          (((or common-fail:manipulation-low-level-failure
+                common-fail:manipulation-goal-not-reached) (e)
+             (roslisp:ros-warn (assembly assemble)
+                               "Manipulation messed up: ~a~%Ignoring." e)
+             (cpl:do-retry clicking-retries
+               (sleep 1) ;; waiting for force to stabilize#
 
-  ;;              (break "Executing heurstic classfication.")
-  ;;              ;; (roslisp:ros-info (assembly-demo assembling)
-  ;;              ;;                   "Heruistic tries for adjustment in ~a"
-  ;;              ;;                   heuristic-response)
-  ;;              (setf heuristic-response
-  ;;                    (cpl:wait-for (cpl:fl-funcall #'chassis-heuristic boxy-ll:*wrench-state-fluent*)))
-  ;;              (break "Heruistic says ~a" heuristic-response)
-  ;;              (unless (eq (third heuristic-response) :success)
-  ;;                (roslisp:ros-info (assembly-demo assembling) "Retracting for retry.")
-  ;;                (exe:perform
-  ;;                 (desig:an action
-  ;;                           (type reaching)
-  ;;                           (left-poses ?flex-left-reach-poses)
-  ;;                           (right-poses ?flex-right-reach-poses)
-  ;;                           (collision-mode :avoid-all)
-  ;;                           (constraints ?constraints)))
-  ;;                (setf ?flex-left-reach-poses
-  ;;                      (mapcar (lambda (pose)
-  ;;                                (cram-tf:translate-pose
-  ;;                                 pose
-  ;;                                 :x-offset (* reposition-factor (first heuristic-response))
-  ;;                                 :y-offset (* reposition-factor (second heuristic-response))))
-  ;;                              ?flex-left-reach-poses))
-  ;;                (setf ?flex-right-reach-poses
-  ;;                      (mapcar (lambda (pose)
-  ;;                                (cram-tf:translate-pose
-  ;;                                 pose
-  ;;                                 :x-offset (* reposition-factor (first heuristic-response))
-  ;;                                 :y-offset (* reposition-factor (second heuristic-response))))
-  ;;                              ?flex-right-reach-poses))
-  ;;                (setf ?flex-left-put-poses
-  ;;                      (mapcar (lambda (pose)
-  ;;                                (cram-tf:translate-pose
-  ;;                                 pose
-  ;;                                 :x-offset (* reposition-factor (first heuristic-response))
-  ;;                                 :y-offset (* reposition-factor (second heuristic-response))))
-  ;;                              ?flex-left-put-poses))
-  ;;                (setf ?flex-right-put-poses
-  ;;                      (mapcar (lambda (pose)
-  ;;                                (cram-tf:translate-pose
-  ;;                                 pose
-  ;;                                 :x-offset (* reposition-factor (first heuristic-response))
-  ;;                                 :y-offset (* reposition-factor (second heuristic-response))))
-  ;;                              ?flex-right-put-poses))
+               (break "Executing heurstic classfication.")
+               ;; (roslisp:ros-info (assembly-demo assembling)
+               ;;                   "Heruistic tries for adjustment in ~a"
+               ;;                   heuristic-response)
+               (setf heuristic-response
+                     (cpl:wait-for (cpl:fl-funcall #'chassis-heuristic boxy-ll:*wrench-state-fluent*)))
+               (break "Heruistic says ~a" heuristic-response)
+               (unless (eq (third heuristic-response) :success)
+                 (roslisp:ros-info (assembly-demo assembling) "Retracting for retry.")
+                 (exe:perform
+                  (desig:an action
+                            (type reaching)
+                            (left-poses ?flex-left-reach-poses)
+                            (right-poses ?flex-right-reach-poses)
+                            (collision-mode :avoid-all)
+                            (constraints ?constraints)))
+                 (setf ?flex-left-reach-poses
+                       (mapcar (lambda (pose)
+                                 (cram-tf:translate-pose
+                                  pose
+                                  :x-offset (* reposition-factor (first heuristic-response))
+                                  :y-offset (* reposition-factor (second heuristic-response))))
+                               ?flex-left-reach-poses))
+                 (setf ?flex-right-reach-poses
+                       (mapcar (lambda (pose)
+                                 (cram-tf:translate-pose
+                                  pose
+                                  :x-offset (* reposition-factor (first heuristic-response))
+                                  :y-offset (* reposition-factor (second heuristic-response))))
+                               ?flex-right-reach-poses))
+                 (setf ?flex-left-put-poses
+                       (mapcar (lambda (pose)
+                                 (cram-tf:translate-pose
+                                  pose
+                                  :x-offset (* reposition-factor (first heuristic-response))
+                                  :y-offset (* reposition-factor (second heuristic-response))))
+                               ?flex-left-put-poses))
+                 (setf ?flex-right-put-poses
+                       (mapcar (lambda (pose)
+                                 (cram-tf:translate-pose
+                                  pose
+                                  :x-offset (* reposition-factor (first heuristic-response))
+                                  :y-offset (* reposition-factor (second heuristic-response))))
+                               ?flex-right-put-poses))
                  
-  ;;                (viz-debug-pose (car (last ?flex-left-reach-poses)))
+                 (viz-debug-pose (car (last ?flex-left-reach-poses)))
                  
-  ;;                (roslisp:ros-info (assembly-demo assembling) "Repositioning to adjusted reach pose.")
-  ;;                (exe:perform
-  ;;                 (desig:an action
-  ;;                           (type reaching)
-  ;;                           (left-poses ?flex-left-reach-poses)
-  ;;                           (right-poses ?flex-right-reach-poses)
-  ;;                           (collision-mode :allow-all)
-  ;;                           (constraints ?constraints)))))
-  ;;            (if (eq (third heuristic-response) :success)
-  ;;                (cpl:continue)
-  ;;                (cpl:retry))))
-  ;;       (break "[assembly] Putting object & force detect in parallel.")
-  ;;       (cpl:pursue
-  ;;         (and (cpl:wait-for (cpl:> (cpl:fl-funcall #'force-aggregated boxy-ll:*wrench-state-fluent*) 3))
-  ;;              (roslisp:ros-info (assembling) "Object touched.")
-  ;;              (unless (eq (third heuristic-response) :success)
-  ;;                (cpl:fail 'common-fail:manipulation-low-level-failure
-  ;;                          :description "Object was touched!")))
-  ;;         (exe:perform
-  ;;          (desig:an action
-  ;;                    (type putting)
-  ;;                    (object ?object-designator)
-  ;;                    (desig:when ?other-object-designator
-  ;;                      (supporting-object ?other-object-designator))
-  ;;                    (left-poses ?flex-left-put-poses)
-  ;;                    (right-poses ?flex-right-put-poses)
-  ;;                    (constraints ?constraints)))))))
+                 (roslisp:ros-info (assembly-demo assembling) "Repositioning to adjusted reach pose.")
+                 (exe:perform
+                  (desig:an action
+                            (type reaching)
+                            (left-poses ?flex-left-reach-poses)
+                            (right-poses ?flex-right-reach-poses)
+                            (collision-mode :allow-all)
+                            (constraints ?constraints)))))
+             (if (eq (third heuristic-response) :success)
+                 (cpl:continue)
+                 (cpl:retry))))
+        (break "[assembly] Putting object & force detect in parallel.")
+        (cpl:pursue
+          (and (cpl:wait-for (cpl:> (cpl:fl-funcall #'force-aggregated boxy-ll:*wrench-state-fluent*) 3))
+               (roslisp:ros-info (assembling) "Object touched.")
+               (unless (eq (third heuristic-response) :success)
+                 (cpl:fail 'common-fail:manipulation-low-level-failure
+                           :description "Object was touched!")))
+          (exe:perform
+           (desig:an action
+                     (type putting)
+                     (object ?object-designator)
+                     (desig:when ?other-object-designator
+                       (supporting-object ?other-object-designator))
+                     (left-poses ?flex-left-put-poses)
+                     (right-poses ?flex-right-put-poses)
+                     (constraints ?constraints)))))))
+
+  #+after-assembly
+  (
   (setf giskard::*max-velocity* 0.1)
-  ;; (roslisp:set-param "joint_impedance" "regular")
-  ;; (roslisp:set-param "max_joint_velocity" "regular")
   (break "[assembly] Assembling done. Has the arm stopped moving?")
-
   (when ?placing-location-name
     (roslisp:ros-info (assembly assemble) "Asserting assemblage connection in knowledge base")
     (cram-occasions-events:on-event
@@ -630,9 +746,12 @@ for one value. The vector will be normalized to length 1."
                  (left-poses ?without-first-left-retracting-pose)
                  (right-poses ?without-first-right-retracting-pose)
                  (constraints ?constraints)))))
-  (roslisp:ros-info (assembly assemble) "Parking")
-  (home-torso)
-  (home-arms))
+  )
+
+  ;; (roslisp:ros-info (assembly assemble) "Parking")
+  ;; (home-torso)
+  ;; (home-arms)
+  )
 
 
 (defun screw (&key
@@ -694,7 +813,7 @@ for one value. The vector will be normalized to length 1."
                                                                 :z (/ pi -3.0)))))
                (cpl:pursue
                  ;; release tension by moving up 
-                 (cpl:wait-for (cpl-impl:fl< (cpl:fl-funcall #'force-on-axis boxy-ll:*wrench-state-fluent* 'fz)
+                 (cpl:wait-for (cpl-impl:fl< (cpl:fl-funcall #'force-on-axis boxy-ll:*wrench-state-fluent* :fz)
                                              *force-threshold*)
                                :timeout *force-timeout*)
                  (perform
@@ -705,7 +824,7 @@ for one value. The vector will be normalized to length 1."
              (cpl:retry)
              )))
       (cpl:pursue
-        (and (cpl:wait-for (cpl-impl:fl> (cpl:fl-funcall #'force-on-axis boxy-ll:*wrench-state-fluent* 'fz)
+        (and (cpl:wait-for (cpl-impl:fl> (cpl:fl-funcall #'force-on-axis boxy-ll:*wrench-state-fluent* :fz)
                                          *force-threshold*)
                            :timeout *force-timeout*)
              (cpl:fail 'common-fail:manipulation-goal-not-reached
