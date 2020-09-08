@@ -68,7 +68,7 @@
 (defmethod man-int:get-action-gripper-opening :heuristics 20 ((object-type (eql :window)))
   0.02)
 (defmethod man-int:get-action-gripper-opening :heuristics 20 ((object-type (eql :chassis)))
-  0.06)
+  0.07)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; CHASSIS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -29,12 +29,12 @@
 (in-package :demo)
 
 ;; (defparameter *plate-x* -1.1906195322672526d0) 
-(defparameter *plate-y* 1.6363941192626954d0) ;; 1.6)
+(defparameter *plate-y* 1.674701182047526d0) ;; 1.6)
 ;; (defparameter *plate-z* 0.8676) ;;0.884d0);;
 
-(defparameter *plate-x* -1.1571736653645834d0)
+(defparameter *plate-x* -1.1582242329915364d0)
 ;; (defparameter *plate-y* 1.6)
-(defparameter *plate-z* 0.8626)
+(defparameter *plate-z* 0.8826761245727539d0)
 
 #+setting-for-board-when-other-pos-were-verified
 (
@@ -158,7 +158,7 @@
 
     ;; ;; first part of scenario on horizontal holder
     (:chassis :chassis ,*yellow-plane*
-             ((0.125 1.103 ,*chassis-rad-z*) ,man-int:*rotation-around-z-90-list*))
+             ((0.123 1.109 ,*chassis-rad-z*) ,man-int:*rotation-around-z-90-list*))
     ;; (:bottom-wing :bottom-wing ,*cyan-plane*
     ;;              ((0.134 0.25 0.093) (0 0 0 1)))
     ;; (:underbody :underbody ,*red-plane*
