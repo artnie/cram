@@ -30,9 +30,9 @@
 (in-package :demo)
 
 (defun spawn-objects-on-plate (&optional (spawning-poses *object-spawning-data*))
-  ;; (btr-utils:kill-all-objects)
-  ;; (btr:detach-all-objects (btr:get-robot-object))
-  ;; (mapcar (alexandria:compose #'btr:detach-all-objects #'car) spawning-poses)
+  (btr-utils:kill-all-objects)
+  (btr:detach-all-objects (btr:get-robot-object))
+  (mapcar (alexandria:compose #'btr:detach-all-objects #'car) spawning-poses)
   ;; let ((object-types '(:breakfast-cereal :cup :bowl :spoon :milk)))
   ;; spawn objects at default poses
   (let ((objects (mapcar (lambda (object-name-type-pose-list)
@@ -125,19 +125,19 @@
 (defun go-perceive (?object-type ?nav-goal)
   ;; park arms
   (home-torso)
-  (home-arms)
+  ;; (home-arms)
   
   ;; drive to right location
-  (let ((?pose (cl-transforms-stamped:pose->pose-stamped
-                cram-tf:*fixed-frame*
-                0.0
-                (btr:ensure-pose ?nav-goal))))
-    (exe:perform
-     (desig:an action
-               (type going)
-               (target (desig:a location
-                                (pose ?pose)))))
-    )
+  ;; (let ((?pose (cl-transforms-stamped:pose->pose-stamped
+  ;;               cram-tf:*fixed-frame*
+  ;;               0.0
+  ;;               (btr:ensure-pose ?nav-goal))))
+  ;;   (exe:perform
+  ;;    (desig:an action
+  ;;              (type going)
+  ;;              (target (desig:a location
+  ;;                               (pose ?pose)))))
+  ;;   )
 
   (exe:perform
        (desig:a motion
@@ -168,13 +168,13 @@
   ;; go and perceive object
   (let ((?object
           (go-perceive ?object-type ?nav-goal))
-        (?constraints '(;; "odom_x_joint"
-                        ;; "odom_y_joint"
-                        ;; "odom_z_joint"
-                        ;; "triangle_base_joint" 
+        (?constraints '("odom_x_joint"
+                        "odom_y_joint"
+                        "odom_z_joint"
+                        "triangle_base_joint" 
                         )))
     (home-torso)
-    (home-arms)
+    ;; (home-arms)
 
     (btr:detach-all-objects (btr:object btr:*current-bullet-world* (desig:desig-prop-value ?object :name)))
     ;; pick object
@@ -219,21 +219,21 @@
                   (desig:an action
                             (type detecting)
                             (object (desig:an object (name :big-wooden-plate)))))))
-    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :top :offset '(-0.3 0.3 0.0))
+    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :top :offset '(-0.3 0.3 0.0))
       (touch :object ?object
              :arm :left
-             :pose pose
-             :direction dir))
-    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :front :offset '(0.0 0.3 0.0))
+             :pose ?pose
+             :direction ?dir))
+    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :front :offset '(0.0 0.3 0.0))
       (touch :object ?object
              :arm :left
-             :pose pose
-             :direction dir))
-    (multiple-value-bind (pose dir) (touch-trajectory :big-wooden-plate :from :left :offset '(-0.3 0.0 0.0))
+             :pose ?pose
+             :direction ?dir))
+    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :left :offset '(-0.33 0.0 0.005))
       (touch :object ?object
              :arm :left
-             :pose pose
-             :direction dir))))
+             :pose ?pose
+             :direction ?dir))))
 
 #+examples
 (

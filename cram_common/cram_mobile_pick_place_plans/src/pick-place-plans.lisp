@@ -140,17 +140,18 @@
                  ;; (constraints ?constraints)
                  ))
       ))
-  (roslisp:ros-info (pick-place place) "Parking")
-  (exe:perform
-   (desig:an action
-             (type positioning-arm)
-             ;; TODO: this will not work with dual-arm grasping
-             ;; but as our ?arm is declared as a keyword,
-             ;; for now this code is the right code
-             (desig:when (eql ?arm :left)
-               (left-configuration park))
-             (desig:when (eql ?arm :right)
-               (right-configuration park)))))
+  ;; (roslisp:ros-info (pick-place place) "Parking")
+  ;; (exe:perform
+  ;;  (desig:an action
+  ;;            (type positioning-arm)
+  ;;            ;; TODO: this will not work with dual-arm grasping
+  ;;            ;; but as our ?arm is declared as a keyword,
+  ;;            ;; for now this code is the right code
+  ;;            (desig:when (eql ?arm :left)
+  ;;              (left-configuration park))
+  ;;            (desig:when (eql ?arm :right)
+  ;;              (right-configuration park))))
+  )
 
 
 
