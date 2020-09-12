@@ -9,12 +9,6 @@
   (with-giskard-controlled-robot
     (boxy-ll::move-gripper-joint :action-type-or-position :close :left-or-right :left)))
 
-#+good-base-pose
-(cl-tf:make-pose-stamped
-  "map" 0.0
-  (-2.6880709033373353d0 2.076750906430788d0 0.0d0)
-  (0.0d0 0.0d0 -0.38311944677109644d0 0.9236988088688916d0))
-
 #+bring-ee-into-operating-pose
 (let* ((?pose (cl-tf:make-pose-stamped 
                      "base_footprint" 0.0 

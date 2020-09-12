@@ -29,12 +29,12 @@
 (in-package :demo)
 
 ;; (defparameter *plate-x* -1.1906195322672526d0) 
-(defparameter *plate-y* 1.674701182047526d0) ;; 1.6)
+(defparameter *plate-y* 1.6992865244547526d0) ;; 1.6)
 ;; (defparameter *plate-z* 0.8676) ;;0.884d0);;
 
-(defparameter *plate-x* -1.1582242329915364d0)
+(defparameter *plate-x* -1.1106149037679036d0)
 ;; (defparameter *plate-y* 1.6)
-(defparameter *plate-z* 0.8826761245727539d0)
+(defparameter *plate-z* 0.8861499150594075d0)
 
 #+setting-for-board-when-other-pos-were-verified
 (
@@ -98,6 +98,12 @@
 (defparameter *base-very-right-side-left-hand-pose* `((,*base-x* 0.35 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
 (defparameter *base-touch-pose* `((,(- *base-x* 0.1) 1.5 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
 
+(defparameter *good-base-pose*
+  (cl-tf:make-pose-stamped
+   "map" 0.0
+   (cl-tf:make-3d-vector -2.6880709033373353d0 2.076750906430788d0 0.0d0)
+   (cl-tf:make-quaternion 0.0d0 0.0d0 -0.38311944677109644d0 0.9236988088688916d0))
+  "A really good base pose.")
 
 (defparameter *object-spawning-data*
   `((:big-wooden-plate :big-wooden-plate ,*wood-plane*
