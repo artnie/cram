@@ -122,9 +122,30 @@
    (desig:a motion (type moving-torso)
             (joint-angle -0.2))))
 
+(defun home-ee ()
+  (let* ((ee-pose
+           (cram-tf:strip-transform-stamped
+            (cl-tf:lookup-transform cram-tf:*transformer*
+                                    "map"
+                                    "left_gripper_tool_frame")))
+         (z-offset (- (+ *plate-z* 0.25)
+                      (cl-tf:z (cl-tf:origin ee-pose))))
+         (?home-pose (list (cram-tf:translate-pose ee-pose
+                                                   :z-offset z-offset)))
+         (?constraints '("odom_x_joint"
+                         "odom_y_joint"
+                         "odom_z_joint"
+                         "triangle_base_joint")))
+    (exe:perform
+     (desig:an action
+               (type reaching)
+               (left-poses ?home-pose)
+               (collision-mode :allow-all)
+               (constraints ?constraints)))))
+
 (defun go-perceive (?object-type ?nav-goal)
   ;; park arms
-  (home-torso)
+  ;; (home-torso)
   ;; (home-arms)
   
   ;; drive to right location
@@ -166,6 +187,7 @@
 
 (defun go-pick (?object-type ?nav-goal)
   ;; go and perceive object
+  (home-ee)
   (let ((?object
           (go-perceive ?object-type ?nav-goal))
         (?constraints '("odom_x_joint"
@@ -184,6 +206,7 @@
                (arm left)
                (object ?object)
                (constraints ?constraints)))
+    (home-ee)
     ?object))
 
 (defun go-pick-place (?object-type ?nav-goal)
@@ -219,17 +242,17 @@
                   (desig:an action
                             (type detecting)
                             (object (desig:an object (name :big-wooden-plate)))))))
-    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :top :offset '(-0.3 0.3 0.0))
+    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :top :offset '(-0.32 0.35 0.0))
       (touch :object ?object
              :arm :left
              :pose ?pose
              :direction ?dir))
-    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :front :offset '(0.0 0.3 0.0))
+    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :front :offset '(0.05 0.35 0.0))
       (touch :object ?object
              :arm :left
              :pose ?pose
              :direction ?dir))
-    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :left :offset '(-0.33 0.0 0.005))
+    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :left :offset '(-0.32 0.0 0.005))
       (touch :object ?object
              :arm :left
              :pose ?pose
