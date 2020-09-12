@@ -265,11 +265,6 @@ for one value. The vector will be normalized to length 1."
                                   "odom_x_joint"
                                   "odom_y_joint"
                                   "odom_z_joint")))
-         (?1st-touch-pose (list (destructuring-bind (x-off y-off z-off) ?direction
-                                  (cram-tf:translate-pose (car (last ?pose))
-                                                          :x-offset x-off
-                                                          :y-offset y-off
-                                                          :z-offset  z-off))))
          (?2nd-touch-pose (destructuring-bind (x-off y-off z-off) ?direction
                             (list (cram-tf:translate-pose (car (last ?pose))
                                                           :x-offset (* x-off 0.9)
@@ -280,94 +275,52 @@ for one value. The vector will be normalized to length 1."
                                                           :y-offset (* y-off 1.2)
                                                           :z-offset (* z-off 1.2))))))
     ;;Go home
-    ;; (home-torso)
+    (home-torso)
     
     ;; (home-arms)
     ;; Move to suitable position to touch the board
-    ;; (break "moving base to table")
-    ;; (let* ((?nav-goal `((,*base-x* 2.0 0) (0.0d0 0.0d0 -0.382d0 0.923d0)))
-    ;;        (?pose (cl-transforms-stamped:pose->pose-stamped
-    ;;                cram-tf:*fixed-frame* 0.0
-    ;;                (cram-tf:translate-pose (btr:ensure-pose ?nav-goal)
-    ;;                                        :x-offset (- (first ?direction))
-    ;;                                        :y-offset (- (second ?direction))
-    ;;                                        :z-offset (- (third ?direction))))))
-    ;;       (exe:perform
-    ;;        (desig:an action
-    ;;                  (type going)
-    ;;                  (target (desig:a location
-    ;;                                   (pose ?pose))))))
-    
-    #+old
-    (cpl:par
-      (roslisp:ros-info (palpating) "Closing gripper")
-      ;;(boxy-ll::move-gripper-joint :action-type-or-position :close :left-or-right :left)
+    (break "moving base to table")
+    (let* ((?base-pose *good-base-pose*))
       (exe:perform
        (desig:an action
-                 (type closing-gripper)
-                 (gripper ?arm)))
-      (roslisp:ros-info (palpating) "Reaching pre-touch pose")
-      (exe:perform
-            (desig:an action
-                      (type reaching)
-                      (desig:when (eql ?arm :left)
-                        (left-poses ?pose))
-                      (desig:when (eql ?arm :right)
-                        (right-poses ?pose))
-                      (constraints ?constraints)))
-      ;; (cpl:with-retry-counters ((touch-retries 0))
-      ;;    (cpl:with-failure-handling
-      ;;        ((common-fail:manipulation-goal-not-reached (e)
-      ;;           (roslisp:ros-warn (palpating reach-pre-touch)
-      ;;                             "Can't reach pre-touch pose: ~a"
-      ;;                             e)
-      ;;           (cpl:do-retry touch-retries
-      ;;             (break "Reaching pre touch caught manipulation-goal-not-reached fail.~%Retrying")
-      ;;             ;; (roslisp:ros-warn (pick-and-place move-torso) "Retrying with slightly off pose...")
-      ;;             ;; (push (cl-tf:make-pose-stamped
-      ;;             ;;        (cl-tf:frame-id (car ?pose)) (cl-tf:stamp (car ?pose))
-      ;;             ;;        (cl-tf:v+ (cl-tf:make-3d-vector 0 0.1 0) (cl-tf:origin (car ?pose)))
-      ;;             ;;        (cl-tf:orientation (car ?pose)))
-      ;;             ;;       ?pose)
-      ;;             (cpl:retry))))
-      ;;      (break "reaching for pre-touch")
-      ;;      (exe:perform
-      ;;       (desig:an action
-      ;;                 (type reaching)
-      ;;                 (desig:when (eql ?arm :left)
-      ;;                   (left-poses ?pose))
-      ;;                 (desig:when (eql ?arm :right)
-      ;;                   (right-poses ?pose))
-      ;;                 (constraints ?constraints)))))
-      )
-
-    ;; (break "closing the gripper")
-    ;; (setf giskard::*max-velocity* 0.1)
+                 (type going)
+                 (target (desig:a location
+                                  (pose ?base-pose))))))
+ 
     (roslisp:ros-info (palpating) "Closing gripper")
-    ;; (boxy-ll::move-gripper-joint :action-type-or-position :close :left-or-right :left)
     (exe:perform
      (desig:an action
                (type closing-gripper)
                (gripper ?arm)))
 
-    ;; turn gripper before moving, bc giskard moves arm weird
-    (let* ((current-ee-pose (cl-tf:lookup-transform cram-tf:*transformer* "map" "left_gripper_tool_frame"))
-             (current-ee-origin (cl-tf:translation current-ee-pose))
-             (goal-ee-orientation (cl-tf:orientation (car (last ?pose))))
-             (?prepare-gripper-pose (list 
-                                     (cl-tf:make-pose-stamped
-                                      (cl-tf:frame-id current-ee-pose) 0.0
-                                      current-ee-origin goal-ee-orientation)))
-             (?constraints (append ?constraints-wo-all 
-                                   '("left_arm_0_joint" "left_arm_1_joint"
-                                     "left_arm_2_joint" "left_arm_3_joint"
-                                     "left_arm_4_joint" "left_arm_5_joint"))))
-        (exe:perform
-         (desig:an action
-                   (type reaching)
-                   (desig:when (eql ?arm :left)
-                     (left-poses ?prepare-gripper-pose))
-                   (constraints ?constraints))))
+    (break "going above reach pose")
+    (let* ((current-ee-pose (cl-tf:lookup-transform cram-tf:*transformer*
+                                                    "map"
+                                                    "left_gripper_tool_frame"))
+           (origin-above-goal (cl-tf:origin (cram-tf:translate-pose
+                                             (car ?pose)
+                                             :z-offset 0.1)))
+           (?above-goal-pose (list (cl-tf:make-pose-stamped
+                                         (cl-tf:frame-id current-ee-pose) 0.0
+                                         origin-above-goal
+                                         (cl-tf:orientation (car ?pose)))))
+           (?adjusted-gripper-orientation-pose
+             (list (cl-tf:make-pose-stamped
+                    (cl-tf:frame-id current-ee-pose) 0.0
+                    (cl-tf:origin current-ee-pose)
+                    (cl-tf:orientation (car ?pose)))))
+           (?gripper-positioning-constraints
+             (append ?constraints-wo-all 
+                     '("left_arm_0_joint" "left_arm_1_joint"
+                       "left_arm_2_joint" "left_arm_3_joint"
+                       "left_arm_4_joint" "left_arm_5_joint"))))
+      (exe:perform
+       (desig:an action
+                 (type reaching)
+                 (desig:when (eql ?arm :left)
+                   (left-poses ?adjusted-gripper-orientation-pose))
+                 (constraints ?gripper-positioning-constraints)))
+      (push ?above-goal-pose ?pose))
     
     (break "Reaching pre-touch pose")
     (exe:perform
@@ -377,35 +330,7 @@ for one value. The vector will be normalized to length 1."
                  (left-poses ?pose))
                (desig:when (eql ?arm :right)
                  (right-poses ?pose))
-               (constraints ?constraints-wo-all)))
-
-    ;; ;; Move gripper until force sensed
-    ;; (roslisp:ros-info (palpating) "Moving gripper to touch object.")
-    ;; (break "zero wrench")
-    ;; (boxy-ll::zero-wrench-sensor)
-    ;; (break "set impedance loose and velocity very-slow")
-    ;; (roslisp:set-param "joint_impedance" "loose")
-    ;; (roslisp:set-param "max_joint_velocity" "very-slow")
-    ;; ;; (break "set max-velocity to 0.01")
-    ;; ;; (setf giskard::*max-velocity* 0.01)
-    ;; (break "touch until sum of force is greater than 2")
-    ;; (roslisp:ros-info (palpating) "Moving close to object.")
-
-    ;; (cpl:pursue
-    ;;       (and (cpl:wait-for (cpl:> (cpl:fl-funcall #'force-aggregated boxy-ll:*wrench-state-fluent*) 3))
-    ;;            (roslisp:ros-info (assembling) "Object touched.")
-    ;;            (unless (eq (third heuristic-response) :success)
-    ;;              (cpl:fail 'common-fail:manipulation-low-level-failure
-    ;;                        :description "Object was touched!")))
-    ;;       (exe:perform
-    ;;        (desig:an action
-    ;;                  (type putting)
-    ;;                  (object ?object-designator)
-    ;;                  (desig:when ?other-object-designator
-    ;;                    (supporting-object ?other-object-designator))
-    ;;                  (left-poses ?flex-left-put-poses)
-    ;;                  (right-poses ?flex-right-put-poses)
-    ;;                  (constraints ?constraints))))
+               (constraints ?constraints-wo-base)))
 
     (break "Goal reached?")
     (let (touched
@@ -432,24 +357,21 @@ for one value. The vector will be normalized to length 1."
                    (desig:when (eql ?arm :right)
                      (right-poses ?right-touch-trajectory))
                    (constraints ?constraints-wo-all)))))
-    ;; (roslisp:set-param "joint_impedance" "regular")
-    ;; (roslisp:set-param "max_joint_velocity" "regular")
+
     (break "[touch] Touching plan finished. Is the motion done jet?")
-    
-    ;; Adjust object pose based on gripper position.
-    (setf giskard::*max-velocity* 0.1)
 
     (update-object-pose-from-touch ?object-name ?direction)
     
     (break "Reaching back to pre-touch pose")
-    (exe:perform
-     (desig:an action
-               (type reaching)
-               (desig:when (eql ?arm :left)
-                 (left-poses ?pose))
-               (desig:when (eql ?arm :right)
-                 (right-poses ?pose))
-               (constraints ?constraints-wo-all)))))
+    (let ((?pre-grasp-pose (list (car ?pose))))
+      (exe:perform
+       (desig:an action
+                 (type reaching)
+                 (desig:when (eql ?arm :left)
+                   (left-poses ?pre-grasp-pose))
+                 (desig:when (eql ?arm :right)
+                   (right-poses ?pre-grasp-pose))
+                 (constraints ?constraints-wo-all))))))
 ;; TOUCHING ;;
 ;;;;;;;;;;;;;;
 
@@ -479,48 +401,46 @@ for one value. The vector will be normalized to length 1."
                  ?left-put-poses ?right-put-poses
                  ?left-retract-poses ?right-retract-poses))
   (fl-gate boxy-ll:*wrench-state-fluent*)
-  (roslisp:ros-info (assembly assemble) "Reach pose:~% ~a" ?left-reach-poses)
-  (roslisp:ros-info (assembly assemble) "Put pose:~% ~a" ?left-put-poses)
   "Reach, put, assert assemblage if given, open gripper, retract grasp event, retract arm."
 
-  #+prepare-gripper-orientation
-  (let* ((current-ee-pose (cl-tf:lookup-transform cram-tf:*transformer* "map" "left_gripper_tool_frame"))
-         (current-ee-origin (cl-tf:translation current-ee-pose))
-         (goal-ee-orientation (cl-tf:orientation (car (last ?left-reach-poses))))
-         (?prepare-gripper-pose (list 
-                                 (cl-tf:make-pose-stamped
-                                  (cl-tf:frame-id current-ee-pose) 0.0
-                                  current-ee-origin
-                                  goal-ee-orientation)))
-         (?constraints (remove-duplicates
-                        (append ?constraints 
-                                '("left_arm_0_joint" "left_arm_1_joint"
-                                  "left_arm_2_joint" "left_arm_3_joint"
-                                  "left_arm_4_joint" "left_arm_5_joint"))
-                        :test #'string=)))
-    (exe:perform
-     (desig:an action
-               (type reaching)
-               (desig:when (eql ?arm :left)
-                 (left-poses ?prepare-gripper-pose))
-               (constraints ?constraints))))
+  ;; (home-ee)
+  ;; ;; #+prepare-gripper-orientation
+  ;; (let* ((current-ee-pose (cl-tf:lookup-transform cram-tf:*transformer* "map" "left_gripper_tool_frame"))
+  ;;        (current-ee-origin (cl-tf:translation current-ee-pose))
+  ;;        (goal-ee-orientation (cl-tf:orientation (car (last ?left-reach-poses))))
+  ;;        (?prepare-gripper-pose (list 
+  ;;                                (cl-tf:make-pose-stamped
+  ;;                                 (cl-tf:frame-id current-ee-pose) 0.0
+  ;;                                 current-ee-origin
+  ;;                                 goal-ee-orientation)))
+  ;;        (?constraints (remove-duplicates
+  ;;                       (append ?constraints 
+  ;;                               '("left_arm_0_joint" "left_arm_1_joint"
+  ;;                                 "left_arm_2_joint" "left_arm_3_joint"
+  ;;                                 "left_arm_4_joint" "left_arm_5_joint"))
+  ;;                       :test #'string=)))
+  ;;   (exe:perform
+  ;;    (desig:an action
+  ;;              (type reaching)
+  ;;              (desig:when (eql ?arm :left)
+  ;;                (left-poses ?prepare-gripper-pose))
+  ;;              (constraints ?constraints))))
   
   
-  #+reaching
-  (cpl:with-failure-handling
-      ((common-fail:manipulation-low-level-failure (e)
-         (roslisp:ros-warn (pp-plans pick-up) "Manipulation messed up: ~a~%Ignoring." e)))
-    (roslisp:ros-info (assembly assemble) "Reaching")
-    (exe:perform
-     (desig:an action
-               (type reaching)
-               (left-poses ?left-reach-poses)
-               (right-poses ?right-reach-poses)
-               (constraints ?constraints))))
+  ;; ;; #+reaching
+  ;; (cpl:with-failure-handling
+  ;;     ((common-fail:manipulation-low-level-failure (e)
+  ;;        (roslisp:ros-warn (pp-plans pick-up) "Manipulation messed up: ~a~%Ignoring." e)))
+  ;;   (roslisp:ros-info (assembly assemble) "Reaching")
+  ;;   (exe:perform
+  ;;    (desig:an action
+  ;;              (type reaching)
+  ;;              (left-poses ?left-reach-poses)
+  ;;              (right-poses ?right-reach-poses)
+  ;;              (constraints ?constraints))))
 
   (roslisp:ros-info (assembly assemble) "Putting")
   (boxy-ll::zero-wrench-sensor)
-  (setf giskard::*max-velocity* 0.01)
 
   (break "Ready for heuristic magic?")
   (let* ((?left-trajectory (split-trajectory-between
@@ -528,13 +448,13 @@ for one value. The vector will be normalized to length 1."
                             (cl-tf:lookup-transform cram-tf:*transformer*
                                                     "map" "left_gripper_tool_frame"))
                            (car (last ?left-put-poses))
-                           :splits 10))
+                           :splits 5))
          (?left-trajectory-copy (copy-list ?left-trajectory))
          touched
          (heuristic-results (make-hash-table :test #'equal))
          (min-heuristic-data 4)
          (max-heuristic-data 9)
-         (reposition-factor 0.0005))
+         (reposition-factor 0.005))
     (apply #'viz-trajectory-split ?left-trajectory)
     (labels ((heuristic-data-sum ()
                (apply #'+ (alexandria:hash-table-values heuristic-results)))
@@ -562,15 +482,7 @@ for one value. The vector will be normalized to length 1."
                  (when ?current-pose
                    (fl-gate boxy-ll:*wrench-state-fluent*)
                    (boxy-ll::zero-wrench-sensor)
-                   (cpl:pursue
-                     (and (cpl:wait-for
-                           (cpl-impl:fl<
-                            (cpl:fl-funcall #'force-on-axis
-                                            boxy-ll:*wrench-state-fluent*
-                                            :fz)
-                            -1.0))
-                          (roslisp:ros-info (palpating) "Object touched.")
-                          (setf touched T))
+                   (cpl:try-in-order
                      (exe:perform
                       (desig:an action
                                 (type putting)
@@ -579,19 +491,29 @@ for one value. The vector will be normalized to length 1."
                                   (supporting-object ?other-object-designator))
                                 (left-poses ?current-pose)
                                 (right-poses nil)
-                                (constraints ?constraints))))
+                                (constraints ?constraints)))
+                     (and (cpl:wait-for (cpl-impl:fl<
+                                         (cpl:fl-funcall #'force-on-axis
+                                                         boxy-ll:*wrench-state-fluent*
+                                                         :fz)
+                                         -1.0)
+                                        :timeout 2.0)
+                          (roslisp:ros-info (palpating) "Object touched.")
+                          (setf touched T)))
                    (if touched
                        (let ((heuristic-result
                                (or (sleep 1) ;; wait for force to stabilize
                                    (cpl:value (cpl:fl-funcall #'chassis-heuristic
                                                               boxy-ll:*wrench-state-fluent*)))))
+                         (break "Touched! Heuristic result ~a" heuristic-result)
                          (setf touched nil)
                          (if (gethash heuristic-result heuristic-results)
                              (incf (gethash heuristic-result heuristic-results))
                              (setf (gethash heuristic-result heuristic-results) 1))
                          (if (and (dominant-result-found heuristic-result)
                                   (enough-data))
-                             ;; suitable result found, applying offset to remaining poses
+                             ;; suitable result found
+                             ;; apply suggested offset on remaining poses
                              ;; then go on trying
                              (progn (break "result ~a found" heuristic-result)
                                     (retract-from-touch ?previous-pose)
