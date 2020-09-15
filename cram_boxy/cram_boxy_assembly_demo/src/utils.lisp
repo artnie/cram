@@ -5,7 +5,7 @@
                            :ay (second euler-list)
                            :az (third euler-list)))
 
-(defun split-trajectory-between (pose-1 pose-2 &key (splits 4))
+(defun split-trajectory-between (pose-1 pose-2 &key (splits 10))
   (declare (type cl-tf:pose-stamped pose-1 pose-2))
   "frames must be equal!!!"
   (let* ((translation (cl-tf:v- (cl-tf:origin pose-2)

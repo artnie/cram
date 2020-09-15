@@ -122,7 +122,7 @@
    (desig:a motion (type moving-torso)
             (joint-angle -0.2))))
 
-(defun home-ee ()
+(defun home-ee (&optional with-torso)
   (let* ((ee-pose
            (cram-tf:strip-transform-stamped
             (cl-tf:lookup-transform cram-tf:*transformer*
@@ -134,8 +134,9 @@
                                                    :z-offset z-offset)))
          (?constraints '("odom_x_joint"
                          "odom_y_joint"
-                         "odom_z_joint"
-                         "triangle_base_joint")))
+                         "odom_z_joint")))
+    (unless with-torso
+      (push "triangle_base_joint" ?constraints))
     (exe:perform
      (desig:an action
                (type reaching)
@@ -187,7 +188,7 @@
 
 (defun go-pick (?object-type ?nav-goal)
   ;; go and perceive object
-  (home-ee)
+  ;; (home-ee T)
   (let ((?object
           (go-perceive ?object-type ?nav-goal))
         (?constraints '("odom_x_joint"
@@ -195,7 +196,7 @@
                         "odom_z_joint"
                         "triangle_base_joint" 
                         )))
-    (home-torso)
+    ;; (home-torso)
     ;; (home-arms)
 
     (btr:detach-all-objects (btr:object btr:*current-bullet-world* (desig:desig-prop-value ?object :name)))
@@ -225,7 +226,11 @@
           (go-pick ?object-type ?nav-goal)))
     ;; go and perceive other object
     (let ((?other-object
-            (go-perceive ?other-object-type ?other-nav-goal)))
+            (go-perceive ?other-object-type ?other-nav-goal))
+          (?constraints '("odom_x_joint"
+                          "odom_y_joint"
+                          "odom_z_joint"
+                          "triangle_base_joint")))
       (exe:perform
        (desig:an action
                  (type assembling)
@@ -234,7 +239,8 @@
                  (target (desig:a location
                                   (on ?other-object)
                                   (for ?object)
-                                  (attachment ?attachment-type)))))
+                                  (attachment ?attachment-type)))
+                 (constraints ?constraints)))
       (values ?object ?other-object))))
 
 (defun palpate-board ()

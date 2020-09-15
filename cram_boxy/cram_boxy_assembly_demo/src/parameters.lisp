@@ -29,12 +29,12 @@
 (in-package :demo)
 
 ;; (defparameter *plate-x* -1.1906195322672526d0) 
-(defparameter *plate-y* 1.6992865244547526d0) ;; 1.6)
+(defparameter *plate-y* 1.7166573842366537d0) ;; 1.6)
 ;; (defparameter *plate-z* 0.8676) ;;0.884d0);;
 
-(defparameter *plate-x* -1.1106149037679036d0)
+(defparameter *plate-x* -1.0901241302490234d0)
 ;; (defparameter *plate-y* 1.6)
-(defparameter *plate-z* 0.8861499150594075d0)
+(defparameter *plate-z* 0.8845722198486328d0)
 
 #+setting-for-board-when-other-pos-were-verified
 (

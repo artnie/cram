@@ -72,14 +72,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; CHASSIS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defparameter *chassis-grasp-z-offset* 0.00)
+(defparameter *chassis-grasp-z-offset* -0.01)
 
 ;; TOP grasp
 (man-int:def-object-type-to-gripper-transforms :chassis '(:left :right) :top
   :grasp-translation `(0.0 0.0 ,*chassis-grasp-z-offset*)
   :grasp-rot-matrix man-int:*z-across-x-grasp-rotation*
-  :pregrasp-offsets `(0.0 0.0 0.1) ;; *default-lift-offsets*
-  :2nd-pregrasp-offsets `(0.0 0.0 0.0) ;; *default-lift-offsets*
+  :pregrasp-offsets `(0.0 0.0 0.15) ;; *default-lift-offsets*
+  :2nd-pregrasp-offsets `(0.0 0.0 0.05) ;; *default-lift-offsets*
   :lift-offsets *default-small-lift-offsets*
   :2nd-lift-offsets *default-lift-offsets*)
 
