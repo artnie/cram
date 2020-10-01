@@ -1,13 +1,18 @@
 (in-package :demo)
 
+(defparameter *base-joints* '("odom_x_joint" "odom_y_joint" "odom_z_joint"))
+(defparameter *torso-joints* '("triangle_base_joint"))
+
 (defun euler-list->quaternion (euler-list)
   (cl-tf:euler->quaternion :ax (first euler-list)
                            :ay (second euler-list)
                            :az (third euler-list)))
 
-(defun split-trajectory-between (pose-1 pose-2 &key (splits 10))
+(defun split-trajectory-between (pose-1 pose-2 &key (max-dist 0.005d0))
   (declare (type cl-tf:pose-stamped pose-1 pose-2))
-  "frames must be equal!!!"
+  (unless (equalp (cl-tf:frame-id pose-1)
+                  (cl-tf:frame-id pose-2))
+    (error "(assembly split-trajectory-between) Frames must be equal!!!"))
   (let* ((translation (cl-tf:v- (cl-tf:origin pose-2)
                                 (cl-tf:origin pose-1)))
          (rotation (cl-tf:quaternion->euler
@@ -15,7 +20,9 @@
                               (cl-tf:q-inv (cl-tf:orientation pose-1)))
                     :just-values t))
          (frame (cl-tf:frame-id pose-1))
-         (stamp 0.0))
+         (stamp 0.0)
+         ;; if given splits would move further than max-dist, increase splits
+         (splits (ceiling (/ (cl-tf:v-norm translation) max-dist))))
     (mapcar (lambda (tr)
                   (cl-tf:make-pose-stamped
                    frame stamp
@@ -87,8 +94,8 @@
     (with-giskard-controlled-robot
       (review-all-objects))))
 
-(defun review-all-objects ()
-  (loop for ?object-name in (mapcar #'car *object-spawning-data*)
+(defun review-all-objects (&optional leave-out-held-object-name)
+  (loop for ?object-name in (remove leave-out-held-object-name (mapcar #'car *object-spawning-data*))
             do (exe:perform
                 (desig:an action 
                           (type detecting)
