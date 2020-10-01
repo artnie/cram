@@ -77,7 +77,7 @@
 ;; TOP grasp
 (man-int:def-object-type-to-gripper-transforms :chassis '(:left :right) :top
   :grasp-translation `(0.0 0.0 ,*chassis-grasp-z-offset*)
-  :grasp-rot-matrix man-int:*z-across-x-grasp-rotation*
+  :grasp-rot-matrix man-int:*z-across-x-grasp+180z-rotation*
   :pregrasp-offsets `(0.0 0.0 0.15) ;; *default-lift-offsets*
   :2nd-pregrasp-offsets `(0.0 0.0 0.05) ;; *default-lift-offsets*
   :lift-offsets *default-small-lift-offsets*
@@ -85,30 +85,30 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; BOTTOM-WING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defparameter *bottom-wing-grasp-x-offset* 0.1)
-(defparameter *bottom-wing-grasp-y-offset* 0.01)
-(defparameter *bottom-wing-grasp-z-offset* 0.0)
+(defparameter *bottom-wing-grasp-x-offset* 0.07)
+(defparameter *bottom-wing-grasp-y-offset* 0.0)
+(defparameter *bottom-wing-grasp-z-offset* 0.005)
 
 ;; SIDE grasp
-(man-int:def-object-type-to-gripper-transforms :bottom-wing :left :right-side
-  :grasp-translation `(,(- *bottom-wing-grasp-x-offset*)
-                       ,*bottom-wing-grasp-y-offset*
-                       ,*bottom-wing-grasp-z-offset*)
-  :grasp-rot-matrix man-int:*y-across-x-grasp-rotation*
-  :pregrasp-offsets `(0 ,*default-z-offset* ,*default-z-offset*)
-  :2nd-pregrasp-offsets `(0 ,*default-z-offset* 0.0)
-  :lift-offsets *default-small-lift-offsets*
-  :2nd-lift-offsets *default-lift-offsets*)
+;; (man-int:def-object-type-to-gripper-transforms :bottom-wing :left :right-side
+;;   :grasp-translation `(,(- *bottom-wing-grasp-x-offset*)
+;;                        ,*bottom-wing-grasp-y-offset*
+;;                        ,*bottom-wing-grasp-z-offset*)
+;;   :grasp-rot-matrix man-int:*y-across-x-grasp-rotation*
+;;   :pregrasp-offsets `(0 ,*default-z-offset* ,*default-z-offset*)
+;;   :2nd-pregrasp-offsets `(0 ,*default-z-offset* 0.0)
+;;   :lift-offsets *default-small-lift-offsets*
+;;   :2nd-lift-offsets *default-lift-offsets*)
 
-(man-int:def-object-type-to-gripper-transforms :bottom-wing :right :right-side
-  :grasp-translation `(,*bottom-wing-grasp-x-offset*
-                       ,(- *bottom-wing-grasp-y-offset*)
-                       ,*bottom-wing-grasp-z-offset*)
-  :grasp-rot-matrix man-int:*-y-across-x-grasp-rotation*
-  :pregrasp-offsets `(0 ,(- *default-z-offset*) ,*default-z-offset*)
-  :2nd-pregrasp-offsets `(0 ,(- *default-z-offset*) 0.0)
-  :lift-offsets *default-small-lift-offsets*
-  :2nd-lift-offsets *default-lift-offsets*)
+;; (man-int:def-object-type-to-gripper-transforms :bottom-wing :right :right-side
+;;   :grasp-translation `(,*bottom-wing-grasp-x-offset*
+;;                        ,(- *bottom-wing-grasp-y-offset*)
+;;                        ,*bottom-wing-grasp-z-offset*)
+;;   :grasp-rot-matrix man-int:*-y-across-x-grasp-rotation*
+;;   :pregrasp-offsets `(0 ,(- *default-z-offset*) ,*default-z-offset*)
+;;   :2nd-pregrasp-offsets `(0 ,(- *default-z-offset*) 0.0)
+;;   :lift-offsets *default-small-lift-offsets*
+;;   :2nd-lift-offsets *default-lift-offsets*)
 
 ;; BACK grasp
 (man-int:def-object-type-to-gripper-transforms :bottom-wing '(:left :right) :back
