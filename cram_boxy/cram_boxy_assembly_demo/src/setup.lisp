@@ -112,6 +112,7 @@
 
   (btr:add-objects-to-mesh-list "assembly_models" :directory "fixtures" :extension "stl")
   (btr:add-objects-to-mesh-list "assembly_models" :directory "battat/convention" :extension "stl")
+  (btr:add-objects-to-mesh-list "assembly_models" :directory "battat/convention" :extension "dae")
 
   (add-kitchen-to-giskard))
 
