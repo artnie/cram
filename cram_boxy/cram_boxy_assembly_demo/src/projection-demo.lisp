@@ -33,7 +33,7 @@
   (btr-utils:kill-all-objects)
   (btr:detach-all-objects (btr:get-robot-object))
   (mapcar (alexandria:compose #'btr:detach-all-objects #'car) spawning-poses)
-  ;; let ((object-types '(:breakfast-cereal :cup :bowl :spoon :milk)))
+
   ;; spawn objects at default poses
   (let ((objects (mapcar (lambda (object-name-type-pose-list)
                            (destructuring-bind (object-name object-type object-color
@@ -96,31 +96,45 @@
   (btr:attach-object :motor-grill :underbody)
   (loop for holder in '(:holder-bolt :holder-upper-body :holder-bottom-wing :holder-underbody
                         :holder-plane-horizontal :holder-window :holder-plane-vertical :holder-top-wing)
-        do (btr:attach-object :big-wooden-plate holder))
+        do (btr:attach-object :big-wooden-plate holder :loose t))
   (btr:attach-object :big-wooden-plate :chassis :loose t)
-  (btr:attach-object :holder-bottom-wing :bottom-wing)
-  (btr:attach-object :holder-underbody :underbody)
-  (btr:attach-object :holder-upper-body :upper-body)
-  (btr:attach-object :holder-top-wing :top-wing)
-  (btr:attach-object :holder-plane-horizontal :rear-wing))
+  (btr:attach-object :holder-bottom-wing :bottom-wing :loose t)
+  (btr:attach-object :holder-underbody :underbody :loose t)
+  (btr:attach-object :holder-upper-body :upper-body :loose t)
+  (btr:attach-object :holder-top-wing :top-wing :loose t)
+  (btr:attach-object :holder-plane-horizontal :rear-wing :loose t))
 
 (defun home ()
   (with-giskard-controlled-robot
     (home-torso)
     (home-arms)))
 
-(defun home-arms ()
+(defun home-arms (&optional alternative-configuration-name)
   (exe:perform
-   (desig:an action
-             (type positioning-arm)
-             (left-configuration park)
-             ;; (right-configuration park)
-             )))
+   (desig:a motion (type moving-torso)
+            (joint-angle -0.01)))
+  (let ((?constraints '("odom_x_joint"
+                        "odom_y_joint"
+                        "odom_z_joint"))
+        (?arm-configuration (or alternative-configuration-name
+                                :park)))
+    (break "wait for torso")
+    (exe:perform
+     (desig:an action
+               (type positioning-arm)
+               (left-configuration ?arm-configuration)
+               ;; (right-configuration ?arm-configuration)
+               (collision-move :avoid-all)
+               (constraints ?constraints)
+               )))
+  (break "Waiting for arms"))
 
 (defun home-torso ()
   (exe:perform
    (desig:a motion (type moving-torso)
             (joint-angle -0.2))))
+
+
 
 (defun home-ee (&optional with-torso)
   (let* ((ee-pose
@@ -132,11 +146,15 @@
                       (cl-tf:z (cl-tf:origin ee-pose))))
          (?home-pose (list (cram-tf:translate-pose ee-pose
                                                    :z-offset z-offset)))
-         (?constraints '("odom_x_joint"
-                         "odom_y_joint"
-                         "odom_z_joint")))
-    (unless with-torso
-      (push "triangle_base_joint" ?constraints))
+         
+         (?constraints (if with-torso
+                           `(,(append *base-joints* *torso-joints*)
+                             ,(append (joints:joint-positions *base-joints*)
+                                      '(-0.2)))
+                           *base-joints*)))
+    ;; (when with-torso
+    ;;   (push  '(-0.2) ?constraints)
+    ;;   (push  '("triangle_base_joint") ?constraints))
     (exe:perform
      (desig:an action
                (type reaching)
@@ -194,12 +212,23 @@
         (?constraints '("odom_x_joint"
                         "odom_y_joint"
                         "odom_z_joint"
-                        "triangle_base_joint" 
+                        ;; "triangle_base_joint"
                         )))
-    ;; (home-torso)
-    ;; (home-arms)
-
+    (home-arms :park)
+    
+    (when (eq ?object-type :bottom-wing)
+      (palpate-item :chassis '(:left :front) :base-pose *bit-further-base-pose*)
+      (palpate-item :bottom-wing '(:front :left))
+      
+       (let* ((?base-pose *bit-further-base-pose*))
+         (exe:perform
+          (desig:an action
+                    (type going)
+                    (target (desig:a location
+                                     (pose ?base-pose))))))
+       (home-arms :horizontal))
     (btr:detach-all-objects (btr:object btr:*current-bullet-world* (desig:desig-prop-value ?object :name)))
+    
     ;; pick object
     (exe:perform
      (desig:an action
@@ -229,8 +258,8 @@
             (go-perceive ?other-object-type ?other-nav-goal))
           (?constraints '("odom_x_joint"
                           "odom_y_joint"
-                          "odom_z_joint"
-                          "triangle_base_joint")))
+                          "odom_z_joint")))
+      
       (exe:perform
        (desig:an action
                  (type assembling)
@@ -244,25 +273,138 @@
       (values ?object ?other-object))))
 
 (defun palpate-board ()
+  ;; (let* ((?base-pose *good-base-pose*))
+  ;;   (exe:perform
+  ;;    (desig:an action
+  ;;              (type going)
+  ;;              (target (desig:a location
+  ;;                               (pose ?base-pose))))))
   (let ((?object (exe:perform
                   (desig:an action
                             (type detecting)
                             (object (desig:an object (name :big-wooden-plate)))))))
-    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :top :offset '(-0.32 0.35 0.0))
+    
+    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :top :dist 0.03d0)
       (touch :object ?object
              :arm :left
              :pose ?pose
-             :direction ?dir))
-    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :front :offset '(0.05 0.35 0.0))
+             :direction ?dir
+             :home-arms T))
+    ;; (exe:perform
+    ;;  (desig:a motion (type moving-torso)
+    ;;         (joint-angle -0.1)))
+    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :front :dist 0.04d0)
       (touch :object ?object
              :arm :left
              :pose ?pose
-             :direction ?dir))
-    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :left :offset '(-0.32 0.0 0.005))
+             :direction ?dir
+             :home-arms T))
+    (multiple-value-bind (?pose ?dir) (touch-trajectory :big-wooden-plate :from :left :dist 0.04d0)
       (touch :object ?object
              :arm :left
              :pose ?pose
-             :direction ?dir))))
+             :direction ?dir
+             :home-arms T))))
+
+(defun palpate-item (?item-name sides &key base-pose dist-approach)
+  (when base-pose
+    (let* ((?base-pose base-pose))
+      (exe:perform
+       (desig:an action
+                 (type going)
+                 (target (desig:a location
+                                  (pose ?base-pose)))))))
+  ;; move gripper above goal object
+  
+  
+  (let ((?object (go-perceive ?item-name nil)))
+    (loop for side in sides
+          do (multiple-value-bind (?pose ?dir)
+                 (if dist-approach
+                     (touch-trajectory ?item-name :from side :dist dist-approach)
+                     (touch-trajectory ?item-name :from side))
+               (let ((?above-object-pose
+                       (list
+                        (cl-tf:make-pose-stamped
+                         "map" 0.0
+                         (cl-tf:v+ (cl-tf:origin (btr:pose (btr:object btr:*current-bullet-world* ?item-name)))
+                                   (cl-tf:v*-pairwise (cl-tf:make-3d-vector 0 0 1)
+                                                      (cl-bullet:bounding-box-dimensions
+                                                       (btr:aabb
+                                                        (btr:object btr:*current-bullet-world*
+                                                                    ?item-name)))))
+                         (cl-tf:orientation ?pose))))
+                     (?constraints '("odom_x_joint"
+                                     "odom_y_joint"
+                                     "odom_z_joint")))
+                 (exe:perform
+                  (desig:an action
+                            (type reaching)
+                            (left-poses ?above-object-pose)
+                            (constraints ?constraints))))
+               (touch :object ?object
+                      :arm :left
+                      :pose ?pose
+                      :direction ?dir
+                      :home-arms NIL)))))
+
+(defun full-sequence ()
+  (with-giskard-controlled-robot
+  ;; (home-arms)
+  (let* ((?base-pose *good-base-pose*)
+         (?constraints '("odom_x_joint"
+                         "odom_y_joint"
+                         "odom_z_joint"))
+         (?b-wing-base-pose *bit-further-base-pose*))
+    ;; (exe:perform
+    ;;  (desig:an action
+    ;;            (type going)
+    ;;            (target (desig:a location
+    ;;                             (pose ?base-pose)))))
+    (palpate-board)
+    (go-pick :chassis nil)
+    (palpate-item :holder-plane-horizontal
+                  '(:right :front)
+                  :base-pose *chassis-on-holder-base-pose*
+                  :dist-approach 0.1d0)
+    (home-torso)
+    (let ((?object (go-perceive :chassis nil))
+          (?other-object (go-perceive :holder-plane-horizontal nil)))
+      (exe:perform
+       (desig:an action
+                 (type assembling)
+                 (arm left)
+                 (object ?object)
+                 (target (desig:a location
+                                  (on ?other-object)
+                                  (for ?object)
+                                  (attachment :horizontal-attachment)))
+                 (constraints ?constraints))))
+    (home-arms)
+    (exe:perform
+     (desig:an action
+               (type going)
+               (target (desig:a location
+                                (pose ?b-wing-base-pose)))))
+    (palpate-item :bottom-wing '(:front :left))
+    (palpate-item :chassis '(:left :front))
+    (home-arms :park)
+    (home-arms :horizontal)
+    (go-pick :bottom-wing nil)
+    (let ((?object (go-perceive :bottom-wing nil))
+          (?other-object (go-perceive :chassis nil)))
+      (exe:perform
+       (desig:an action
+                 (type assembling)
+                 (arm left)
+                 (object ?object)
+                 (target (desig:a location
+                                  (on ?other-object)
+                                  (for ?object)
+                                  (attachment :horizontal-attachment)))
+                 (constraints ?constraints)))))))
+  
+
 
 #+examples
 (
