@@ -253,6 +253,6 @@ try:
 
 
         pub.publish(msg)
-        time.sleep(.1)
+        time.sleep(.001)
 finally:
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)

@@ -41,7 +41,7 @@ class Filter(rospy.Subscriber):
 
 def listener():
     rospy.init_node('listener', anonymous=True)
-    pub = rospy.Publisher("left_arm_kms40/wrench_filtered", WrenchStamped, queue_size=10)
+    pub = rospy.Publisher("left_arm_kms40/wrench_zeroed", WrenchStamped, queue_size=10)
     Filter(pub, "left_arm_kms40/wrench", WrenchStamped)
     rospy.spin()
 
