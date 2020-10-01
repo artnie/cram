@@ -46,6 +46,15 @@
     ("left_arm_5_joint" -0.6284394264221191d0)
     ("left_arm_6_joint"  0.2686203718185425d0)))
 
+(defparameter *left-horizontal-joint-states*
+  '(("left_arm_0_joint" 0.47049733996391296d0)
+    ("left_arm_1_joint" 1.2884870767593384d0)
+    ("left_arm_2_joint" -0.7681765556335449d0)
+    ("left_arm_3_joint" -1.7822834253311157d0)
+    ("left_arm_4_joint" -2.131009817123413d0)
+    ("left_arm_5_joint" 1.5190086364746094d0)
+    ("left_arm_6_joint" 1.1976141929626465d0)))
+
 (defparameter *right-parking-joint-states*
   '(("right_arm_0_joint" 0.0)
     ("right_arm_1_joint" 0.0)
@@ -164,6 +173,9 @@
   (<- (robot-joint-states boxy :arm :right :park ?joint-states)
     (symbol-value *right-parking-joint-states* ?joint-states))
 
+  (<- (robot-joint-states boxy :arm :left :horizontal ?joint-states)
+    (symbol-value *left-horizontal-joint-states* ?joint-states))
+  
   (<- (robot-joint-states boxy :arm :left :flip ?joint-states)
     (symbol-value *left-nicer-configuration* ?joint-states))
 
