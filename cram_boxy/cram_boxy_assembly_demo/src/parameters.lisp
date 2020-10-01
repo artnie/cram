@@ -28,13 +28,12 @@
 ;;; POSSIBILITY OF SUCH DAMAGE.
 (in-package :demo)
 
-;; (defparameter *plate-x* -1.1906195322672526d0) 
-(defparameter *plate-y* 1.7166573842366537d0) ;; 1.6)
+;; (defparameter *plate-x* -1.0927605946858725d0)
+(defparameter *plate-x* -1.1783d0) 
+;; (defparameter *plate-y* 1.717272440592448d0) ;; 1.6)
+(defparameter *plate-y* 1.5759d0)
+(defparameter *plate-z* 0.8855d0)
 ;; (defparameter *plate-z* 0.8676) ;;0.884d0);;
-
-(defparameter *plate-x* -1.0901241302490234d0)
-;; (defparameter *plate-y* 1.6)
-(defparameter *plate-z* 0.8845722198486328d0)
 
 #+setting-for-board-when-other-pos-were-verified
 (
@@ -55,14 +54,16 @@
 (defparameter *holder-upperbody-rad-x* 0.085)
 (defparameter *holder-upperbody-rad-y* 0.025)
 (defparameter *holder-upperbody-rad-z* 0.021)
-(defparameter *holder-bottom-wing-rad-x* 0.035)
-(defparameter *holder-bottom-wing-rad-y* 0.045)
+(defparameter *holder-bottom-wing-rad-x* 0.16)
+(defparameter *holder-bottom-wing-rad-y* 0.27)
 (defparameter *holder-bottom-wing-rad-z* 0.045)
 (defparameter *holder-underbody-rad-x* 0.0925)
 (defparameter *holder-underbody-rad-y* 0.025)
 (defparameter *holder-underbody-rad-z* 0.024)
-(defparameter *holder-plane-horizontal-rad-x* 0.208)
-(defparameter *holder-plane-horizontal-rad-y* 1.099)
+;; (defparameter *holder-plane-horizontal-rad-x* 0.146)
+(defparameter *holder-plane-horizontal-rad-x* 0.11548)
+;;(defparameter *holder-plane-horizontal-rad-y* 0.675)
+(defparameter *holder-plane-horizontal-rad-y* 0.67571)
 (defparameter *holder-plane-horizontal-rad-z* 0.1202)
 (defparameter *holder-window-rad-x* 0.026)
 (defparameter *holder-window-rad-y* 0.025)
@@ -73,8 +74,8 @@
 (defparameter *holder-plane-vertical-rad-x* 0.065)
 (defparameter *holder-plane-vertical-rad-y* 0.06)
 (defparameter *holder-plane-vertical-rad-z* 0.0175)
-(defparameter *holder-top-wing-rad-x* 0.035)
-(defparameter *holder-top-wing-rad-y* 0.0415)
+(defparameter *holder-top-wing-rad-x* 0.155)
+(defparameter *holder-top-wing-rad-y* 0.943)
 (defparameter *holder-top-wing-rad-z* 0.045)
 
 (defparameter *yellow-plastic* '(0.949 0.807 0.082))
@@ -101,34 +102,59 @@
 (defparameter *good-base-pose*
   (cl-tf:make-pose-stamped
    "map" 0.0
-   (cl-tf:make-3d-vector -2.6880709033373353d0 2.076750906430788d0 0.0d0)
+   (cl-tf:make-3d-vector -2.67d0 2.1d0 0.0d0)
+   (cl-tf:make-quaternion 0.0d0 0.0d0 -0.38311944677109644d0 0.9236988088688916d0))
+  ;; (cl-tf:make-pose-stamped
+  ;;  "map" 0.0
+  ;;  (cl-tf:make-3d-vector -2.6380709033373353d0 2.076750906430788d0 0.0d0)
+  ;;  (cl-tf:make-quaternion 0.0d0 0.0d0 -0.38311944677109644d0 0.9236988088688916d0))
+  "A really good base pose.")
+
+(defparameter *bit-further-base-pose*
+  (cl-tf:make-pose-stamped
+   "map" 0.0
+   (cl-tf:make-3d-vector -2.75d0 2.3d0 0.0d0)
    (cl-tf:make-quaternion 0.0d0 0.0d0 -0.38311944677109644d0 0.9236988088688916d0))
   "A really good base pose.")
+
+(defparameter *prepare-hor-grasp-base-pose*
+  (cl-tf:make-pose-stamped
+   "map" 0.0
+   (cl-tf:make-3d-vector -2.9d0 2.3d0 0.0d0)
+   (cl-tf:make-quaternion 0.0d0 0.0d0 -0.38311944677109644d0 0.9236988088688916d0))
+  "A really good base pose.")
+
+(defparameter *chassis-on-holder-base-pose*
+  (cl-tf:make-pose-stamped
+   "map" 0.0
+   (cl-tf:make-3d-vector -2.67d0 1.8d0 0.0d0)
+   (cl-tf:make-quaternion 0.0d0 0.0d0 -0.38311944677109644d0 0.9236988088688916d0)))
+
 
 (defparameter *object-spawning-data*
   `((:big-wooden-plate :big-wooden-plate ,*wood-plane*
                       ((,*plate-rad-x* ,*plate-rad-y* ,(- *plate-rad-z*)) (0 0 0 1)))
-    (:holder-bolt :holder-bolt ,*yellow-plastic*
-                 ((0.05 0.025 ,*holder-bolt-rad-z*) (0 0 0 1)))
-    (:holder-upper-body :holder-upper-body ,*yellow-plastic*
-                       ((0.153 0.112 ,*holder-upperbody-rad-z*)
-                        (0 0 0 1)))
+    ;; (:holder-bolt :holder-bolt ,*yellow-plastic*
+    ;;              ((0.05 0.025 ,*holder-bolt-rad-z*) (0 0 0 1)))
+    ;; (:holder-upper-body :holder-upper-body ,*yellow-plastic*
+    ;;                    ((0.153 0.112 ,*holder-upperbody-rad-z*)
+    ;;                     (0 0 0 1)))
     (:holder-bottom-wing :holder-bottom-wing ,*gray-plastic*
-                        ((0.16
-                          0.27
+                        ((,*holder-top-wing-rad-x*
+                          ,*holder-top-wing-rad-y*
                           ,*holder-bottom-wing-rad-z*)
                          ,man-int:*rotation-around-z-90-list*))
 
-    (:holder-underbody :holder-underbody ,*yellow-plastic*
-                      ((0.17 0.413 ,*holder-underbody-rad-z*)
-                       (0 0 0 1)))
+    ;; (:holder-underbody :holder-underbody ,*yellow-plastic*
+    ;;                   ((0.17 0.413 ,*holder-underbody-rad-z*)
+    ;;                    (0 0 0 1)))
 
 
 
     
     (:holder-plane-horizontal :holder-plane-horizontal ,*yellow-plastic*
-                             ((0.146
-                               0.675
+                             ((,*holder-plane-horizontal-rad-x*
+                               ,*holder-plane-horizontal-rad-y*
                                ,*holder-plane-horizontal-rad-z*)
                               (0 0 0.7071067811865475d0 0.7071067811865476d0)))
     ;; (:holder-window :holder-window ,*gray-plastic*
@@ -141,9 +167,9 @@
     ;;                          ,(- 1.0 *holder-plane-vertical-rad-y*)
     ;;                          ,*holder-plane-vertical-rad-z*)
     ;;                         (0 0 0 1)))
-    (:holder-top-wing :holder-top-wing ,*yellow-plastic*
-                     ((0.155 0.943 ,*holder-top-wing-rad-z*)
-                      ,man-int:*rotation-around-z-90-list*))
+    ;; (:holder-top-wing :holder-top-wing ,*yellow-plastic*
+    ;;                  ((,*holder-top-wing-rad-x* ,*holder-top-wing-rad-y* ,*holder-top-wing-rad-z*)
+    ;;                   ,man-int:*rotation-around-z-90-list*))
 
     ;; ;; rear wing is already well positioned
     ;; (:rear-wing :rear-wing ,*yellow-plane*
@@ -151,8 +177,8 @@
     ;;             ,man-int:*rotation-around-z+90-list*))
 
     ;; ;; ;; bolts are used intermediately
-    (:bolt-1 :bolt ,*gray-plane*
-            ((0.015 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
+    ;; (:bolt-1 :bolt ,*gray-plane*
+    ;;         ((0.015 0.0125 ,*bolt-rad-z*) (0 0 0 1)))
     ;; (:bolt-2 :bolt ,*gray-plane*
     ;;         ((0.0325 0.0375 ,*bolt-rad-z*) (0 0 0 1)))
     ;; (:bolt-3 :bolt ,*gray-plane*
@@ -165,8 +191,8 @@
     ;; ;; first part of scenario on horizontal holder
     (:chassis :chassis ,*yellow-plane*
              ((0.123 1.109 ,*chassis-rad-z*) ,man-int:*rotation-around-z-90-list*))
-    ;; (:bottom-wing :bottom-wing ,*cyan-plane*
-    ;;              ((0.134 0.25 0.093) (0 0 0 1)))
+    (:bottom-wing :bottom-wing ,*cyan-plane*
+                 ((0.155 0.938 0.093) (0 0 0 1)))
     ;; (:underbody :underbody ,*red-plane*
     ;;            ((0.145 0.399 0.024) (0 0 0 1)))
     ;; (:motor-grill :motor-grill ,*black-plane*
